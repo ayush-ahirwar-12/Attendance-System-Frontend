@@ -20,7 +20,8 @@ export const useLogin = () => {
 export const useVerify = ()=>{
     return useMutation({
         mutationKey:["verify"],
-        mutationFn:(userId:string)=>api.verifyUser(userId)
+        mutationFn:(userId:string)=>api.verifyUser(userId),
+        retry:1
     })
 }
 
