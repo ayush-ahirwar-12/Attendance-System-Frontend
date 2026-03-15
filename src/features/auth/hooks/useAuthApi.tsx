@@ -17,3 +17,10 @@ export const useLogin = () => {
     })
 }
 
+export const useVerify = ()=>{
+    return useMutation({
+        mutationKey:["verify"],
+        mutationFn:(userId:string)=>api.verifyUser(userId)
+    })
+}
+
