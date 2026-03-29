@@ -11,7 +11,7 @@ const CandidateLayout = async({children}:{children:React.ReactNode}) => {
     }
     else{
         if(!user.isVerified){
-            redirect("/un-verified")
+            redirect("/un-verified");
         }
     }
 

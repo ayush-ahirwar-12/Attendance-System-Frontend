@@ -7,14 +7,10 @@ interface AuthLayoutProps {
 
 const AuthLayout = ({ children, imageUrl }: AuthLayoutProps) => {
   return (
-    <div className="h-screen w-full bg-[#DCDCDC] overflow-hidden flex gap-3.5 p-5 font-[satoshi]">
-      <div className="bg-white w-full rounded-base overflow-hidden">
+    <div className="h-screen w-full bg-[#DCDCDC] flex gap-3.5 p-5 font-[satoshi]">
+      <div className="bg-white w-full rounded-base">
         {children}
       </div>
-      {/* <div
-        className="w-2/3 rounded-base bg-center bg-cover overflow-hidden"
-        style={{ backgroundImage: `url(${imageUrl})` }}
-      /> */}
     </div>
   );
 };

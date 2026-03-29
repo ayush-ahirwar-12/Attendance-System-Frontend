@@ -7,11 +7,13 @@ import Cookies from "js-cookie";
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { setUser } from '@/redux/slices/authSlice';
-import { AlertCircle, ArrowRight, Loader2, Sparkles, UserPlus } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import LabelInput from './LabelInput';
+import FaceCapture from './FaceCapture';
 
 const SignupForm = () => {
     const [serverError, setServerError] = useState<string | null>(null);
+    const [faceDescriptor, setFaceDescriptor] = useState<number[] | null>(null);
     const dispatch = useDispatch();
     const router = useRouter();
 
@@ -34,12 +36,18 @@ const SignupForm = () => {
     }) => {
         setServerError(null);
 
+        if (!faceDescriptor) {
+            setServerError("Please capture your face before registering.");
+            return;
+        }
+
         const formData = new FormData();
         formData.append("firstName", data.firstName);
         formData.append("lastName", data.lastName);
         formData.append("email", data.email);
         formData.append("phoneNumber", data.phoneNumber);
         formData.append("password", data.password);
+        formData.append("faceDescriptor", JSON.stringify(faceDescriptor));
 
         registerUser(formData, {
             onSuccess: (res: any) => {
@@ -57,47 +65,66 @@ const SignupForm = () => {
                 router.push("/un-verified");
             },
             onError: (err: any) => {
-                const message = err?.response?.data?.message || err?.message || "Registration failed.";
+                const message =
+                    err?.response?.data?.message ||
+                    err?.message ||
+                    "Registration failed.";
                 setServerError(message);
             },
         });
-    }
+    };
 
     return (
-        /* Background color change kiya hai taaki white card alag dikhe */
-        <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 px-4 py-1">
-            
-            <div className="w-full max-w-[550px] z-10">
-                {/* Main Card with visible border and soft shadow */}
-                <div className="bg-white rounded-[2.5rem] border-2 border-gray-200/60 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-8 md:p-12 transition-all hover:border-gray-300/80">
-                    
+        /*
+         * KEY FIXES:
+         * 1. min-h-screen ensures the wrapper always fills the viewport
+         * 2. py-10 (instead of py-1) gives breathing room top & bottom so the card is never clipped
+         * 3. overflow-y-auto lets the page scroll if the card is taller than the viewport
+         * 4. Replaced bg-gray-500 with a clean gradient background
+         */
+        <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 px-4 py-10 overflow-y-auto">
+
+            <div className="w-full max-w-[540px] z-10 my-auto">
+
+                {/* Card */}
+                <div className="bg-white rounded-3xl border border-gray-200 shadow-xl shadow-slate-200/60 p-8 md:p-10">
+
                     {/* Header */}
-                    <div className="text-center mb-10">
-                        {/* <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-100 mb-6">
-                            <UserPlus size={26} />
-                        </div> */}
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Create Account</h1>
-                        <p className="text-gray-500 mt-2 font-medium">Join us today! It only takes a minute.</p>
+                    <div className="text-center mb-8">
+                        {/* Icon badge */}
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-200 mb-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="19" y1="8" x2="19" y2="14" />
+                                <line x1="22" y1="11" x2="16" y2="11" />
+                            </svg>
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Create your account</h1>
+                        <p className="text-gray-400 mt-1 text-sm font-medium">Join us today — it only takes a minute.</p>
                     </div>
 
-                    {/* Error / Success Messages */}
+                    {/* Error Message */}
                     {(isError || serverError) && (
-                        <div className="flex items-center gap-3 bg-red-50 text-red-600 px-4 py-3 rounded-2xl border border-red-200 mb-8 animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle size={18} />
-                            <p className="text-sm font-semibold text-wrap">{serverError || "Something went wrong"}</p>
+                        <div className="flex items-start gap-3 bg-red-50 text-red-600 px-4 py-3 rounded-2xl border border-red-200 mb-6">
+                            <AlertCircle size={17} className="mt-0.5 flex-shrink-0" />
+                            <p className="text-sm font-medium leading-snug">{serverError || "Something went wrong"}</p>
                         </div>
                     )}
 
+                    {/* Success Message */}
                     {isSuccess && (
-                        <div className="flex items-center gap-3 bg-green-50 text-green-600 px-4 py-3 rounded-2xl border border-green-200 mb-8 animate-in fade-in zoom-in">
-                            <Sparkles size={18} />
-                            <p className="text-sm font-semibold">Account created! Redirecting...</p>
+                        <div className="flex items-center gap-3 bg-green-50 text-green-600 px-4 py-3 rounded-2xl border border-green-200 mb-6">
+                            <Sparkles size={17} className="flex-shrink-0" />
+                            <p className="text-sm font-medium">Account created! Redirecting…</p>
                         </div>
                     )}
 
-                    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-                        {/* Name Row (Grid layout used for desktop) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Form */}
+                    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+
+                        {/* First + Last Name */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <LabelInput
                                 label="First Name"
                                 placeholder="John"
@@ -136,27 +163,43 @@ const SignupForm = () => {
                             {...register("password", { required: true })}
                         />
 
+                        {/* Face Capture */}
+                        <div>
+                            <p className="text-sm font-semibold text-gray-700 mb-2">Face Verification</p>
+                            <FaceCapture onCapture={setFaceDescriptor} />
+                            {!faceDescriptor ? (
+                                <p className="text-red-500 text-xs mt-1.5 font-medium">
+                                    Face capture is required to continue
+                                </p>
+                            ) : (
+                                <p className="text-green-600 text-xs mt-1.5 font-medium flex items-center gap-1">
+                                    <span>✅</span> Face captured successfully
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={isRegistering}
-                            className="group w-full h-[58px] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-blue-100 disabled:bg-blue-400 disabled:shadow-none mt-4"
+                            className="group w-full h-[52px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md shadow-blue-200 disabled:bg-blue-300 disabled:shadow-none mt-2"
                         >
                             {isRegistering ? (
-                                <Loader2 className="animate-spin" size={24} />
+                                <Loader2 className="animate-spin" size={22} />
                             ) : (
                                 <>
                                     <span>Create Account</span>
-                                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-200" />
                                 </>
                             )}
                         </button>
                     </form>
 
-                    {/* Footer with separator line */}
-                    <div className="mt-1 pt-6 border-t border-gray-100 text-center">
-                        <p className="text-gray-500 font-medium">
+                    {/* Footer */}
+                    <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+                        <p className="text-gray-500 text-sm font-medium">
                             Already have an account?{" "}
-                            <a href="/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors">
+                            <a href="/login" className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
                                 Sign In
                             </a>
                         </p>
@@ -164,7 +207,7 @@ const SignupForm = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default SignupForm;
