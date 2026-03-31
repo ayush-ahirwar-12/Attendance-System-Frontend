@@ -3,13 +3,14 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
-export type Role = 'admin' | 'user';
+export type Role = 'admin' | 'user' | 'teacher' | 'student' | 'manager';
 
 export type User = {
   id: string;
   name: string;
   email: string;
-  isVerified:boolean
+  isVerified:boolean;
+  role:Role;
 };
 
 const JWT_SECRET = process.env.JWT_SECRET!;
