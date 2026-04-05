@@ -1,30 +1,30 @@
-import AttendanceFeed from '@/features/teacher/components/AttendanceFeed';
-import RightPanel from '@/features/teacher/components/RightPanel';
-import Sidebar from '@/features/teacher/components/SideBar';
-import StatsGrid from '@/features/teacher/components/StatsGrid';
-import TopBar from '@/features/teacher/components/TopBar';
+'use client';
 
-const page = () => {
+import React, { useState } from 'react';
+import Sidebar from '@/components/teacher/Sidebar';
+import DashboardOverview from '@/components/teacher/DashboardOverview';
+import StudentsPage from '@/components/teacher/StudentsPage';
+import QRGeneratorPage from '@/components/teacher/QRGeneratorPage';
+
+import type { ActivePage } from '@/components/teacher/types';
+
+export default function TeacherPage() {
+  const [activePage, setActivePage] = useState<ActivePage>('dashboard');
+
+  const renderPage = () => {
+    switch (activePage) {
+      case 'dashboard':     return <DashboardOverview onNavigate={setActivePage} />;
+      case 'students':      return <StudentsPage />;
+      case 'qr-generator':  return <QRGeneratorPage />;
+      default:              return <DashboardOverview onNavigate={setActivePage} />;
+    }
+  };
+
   return (
-    <div>Teacher page</div>
-  )
-}
-
-
-
-export default function DashboardPage() {
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f8f9fa", color: "#191c1d" }}>
-      <Sidebar />
-      <main className="ml-72 min-h-screen flex flex-col">
-        <TopBar />
-        <div className="flex-1 px-10 py-8 space-y-8">
-          <StatsGrid />
-          <div className="grid grid-cols-12 gap-8">
-            <AttendanceFeed />
-            <RightPanel />
-          </div>
-        </div>
+    <div className="flex min-h-screen bg-[#0d0d18]" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <Sidebar activePage={activePage} onNavigate={setActivePage} />
+      <main className="flex-1 min-h-screen overflow-y-auto p-8 bg-[#0d0d18]">
+        {renderPage()}
       </main>
     </div>
   );
