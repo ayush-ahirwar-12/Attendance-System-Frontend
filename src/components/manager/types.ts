@@ -1,17 +1,4 @@
-export type ManagerPage = 'dashboard' | 'courses' | 'teachers' | 'students' | 'classrooms' | 'reports';
-
-export interface Course {
-  id: string;
-  code: string;
-  name: string;
-  teacher: string;
-  teacherInitials: string;
-  students: number;
-  capacity: number;
-  status: 'Active' | 'Inactive' | 'Upcoming';
-  department: string;
-  schedule: string;
-}
+export type ManagerPage = 'dashboard' | 'courses' | 'classes' | 'reports';
 
 export interface Teacher {
   id: string;
@@ -19,8 +6,6 @@ export interface Teacher {
   initials: string;
   email: string;
   department: string;
-  courses: string[];
-  status: 'Active' | 'On Leave';
 }
 
 export interface Student {
@@ -28,19 +13,26 @@ export interface Student {
   name: string;
   initials: string;
   rollNo: string;
-  email: string;
   department: string;
-  courses: string[];
-  attendance: number;
 }
 
-export interface Classroom {
+export interface Course {
   id: string;
+  code: string;
   name: string;
-  building: string;
-  capacity: number;
+  department: string;
+  teacherId: string | null;
+  status: 'Active' | 'Inactive';
+}
+
+export interface ClassItem {
+  id: string;
+  section: string;
+  courseId: string;
+  schedule: { days: string[]; from: string; to: string };
+  classroomName: string;
   lat: number;
   lng: number;
   radius: number;
-  status: 'Active' | 'Inactive';
+  studentIds: string[];
 }
