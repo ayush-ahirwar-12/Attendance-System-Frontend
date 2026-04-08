@@ -3,4 +3,4 @@ export * from "./auth/register";
 export * from "./user/update";
 export * from "./auth/verify"
 
-export * from "./teacher/getCourse";
+export * from "./manager/getCourse";

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, Share2, RefreshCw, Maximize2, Clock, Eye } from 'lucide-react';
-import { useFetchCourses } from '@/features/teacher/hooks/useTeacherApi';
 
 interface QRSession { id: number; classCode: string; className: string; date: string; generatedAt: string; expiry: string; scanned: number; total: number; status: 'Expired' | 'Active' | 'Completed'; }
 
@@ -31,9 +30,6 @@ export default function QRGeneratorPage() {
   const [scanCount, setScanCount] = useState(0);
   const [qrValue,   setQrValue]   = useState('');
   const [Courses,setCourses]= useState();
-
-  const {data:courses,isLoading}=useFetchCourses();
-  console.log(courses);
   
 
   

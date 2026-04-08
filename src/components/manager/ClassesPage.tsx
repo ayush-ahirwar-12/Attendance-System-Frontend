@@ -7,11 +7,15 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 import { INITIAL_CLASSES, INITIAL_COURSES, STUDENTS } from './mockData';
+import { useFetchCourses } from '@/features/manager/hooks/useManagerApi';
 
 /* ─── helpers ──────────────────────────────────────────────────────── */
 const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const getCourse = (courses: Course[], id: string) => courses.find(c => c.id === id);
+
+
+
 
 const Avatar = ({ initials }: { initials: string }) => (
   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#7e51ff] to-[#56ebcf] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
@@ -141,11 +145,10 @@ function ClassModal({ mode, cls, courses, students, onClose, onSave }: ModalProp
                   <button
                     key={day}
                     onClick={() => toggleDay(day)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                      form.schedule.days.includes(day)
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border ${form.schedule.days.includes(day)
                         ? 'bg-[rgba(182,160,255,0.18)] text-[#b6a0ff] border-[rgba(182,160,255,0.3)]'
                         : 'bg-[#12121e] text-[#aba9b9] border-[rgba(71,71,84,0.3)] hover:text-[#e9e6f7]'
-                    }`}
+                      }`}
                   >
                     {day}
                   </button>
@@ -233,11 +236,10 @@ function ClassModal({ mode, cls, courses, students, onClose, onSave }: ModalProp
                       key={s.id}
                       onClick={() => toggleStudent(s.id)}
                       disabled={readOnly}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left ${
-                        selected
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left ${selected
                           ? 'bg-[rgba(182,160,255,0.1)] text-[#b6a0ff]'
                           : 'bg-[#12121e] text-[#aba9b9] hover:bg-[#1e1e2d] disabled:hover:bg-[#12121e]'
-                      }`}
+                        }`}
                     >
                       <Avatar initials={s.initials} />
                       <div className="flex-1">
@@ -283,13 +285,18 @@ function ClassModal({ mode, cls, courses, students, onClose, onSave }: ModalProp
 
 /* ─── main page ────────────────────────────────────────────────────── */
 export default function ClassesPage() {
-  const courses  = INITIAL_COURSES;
+  const courses = INITIAL_COURSES;
   const students = STUDENTS;
 
-  const [classes, setClasses]   = useState<ClassItem[]>(INITIAL_CLASSES);
-  const [search, setSearch]     = useState('');
-  const [modal, setModal]       = useState<{ mode: 'add' | 'edit' | 'view'; cls: ClassItem | null } | null>(null);
+  const [classes, setClasses] = useState<ClassItem[]>(INITIAL_CLASSES);
+  const [search, setSearch] = useState('');
+  const [modal, setModal] = useState<{ mode: 'add' | 'edit' | 'view'; cls: ClassItem | null } | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const { data: coursess, isPending } = useFetchCourses();
+  console.log(coursess);
+  
+ 
 
   const filtered = classes.filter(cls => {
     const course = getCourse(courses, cls.courseId);
@@ -334,10 +341,10 @@ export default function ClassesPage() {
       {/* Stats */}
       <div className="flex gap-3 mb-5">
         {[
-          { label: 'Total Classes',    value: classes.length,                                       color: 'text-[#e9e6f7]' },
-          { label: 'Unique Courses',   value: new Set(classes.map(c => c.courseId)).size,           color: 'text-[#b6a0ff]' },
-          { label: 'Students Assigned',value: new Set(classes.flatMap(c => c.studentIds)).size,     color: 'text-[#68fadd]' },
-          { label: 'GPS Configured',   value: classes.filter(c => c.lat && c.lng).length,           color: 'text-[#ff9800]' },
+          { label: 'Total Classes', value: classes.length, color: 'text-[#e9e6f7]' },
+          { label: 'Unique Courses', value: new Set(classes.map(c => c.courseId)).size, color: 'text-[#b6a0ff]' },
+          { label: 'Students Assigned', value: new Set(classes.flatMap(c => c.studentIds)).size, color: 'text-[#68fadd]' },
+          { label: 'GPS Configured', value: classes.filter(c => c.lat && c.lng).length, color: 'text-[#ff9800]' },
         ].map(({ label, value, color }) => (
           <div key={label} className="bg-[#181826] rounded-lg px-5 py-2.5 flex items-center gap-2.5">
             <span className={`text-xl font-bold ${color}`}>{value}</span>
