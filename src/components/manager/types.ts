@@ -9,30 +9,26 @@ export interface Teacher {
 }
 
 export interface Student {
-  id: string;
+  _id: string;
   name: string;
-  initials: string;
-  rollNo: string;
-  department: string;
+  email:string
+
 }
 
 export interface Course {
-  id: string;
+  _id: string;
   code: string;
   name: string;
-  department: string;
-  teacherId: string | null;
-  status: 'Active' | 'Inactive';
+
 }
 
 export interface ClassItem {
-  id: string;
-  section: string;
-  courseId: string;
-  schedule: { days: string[]; from: string; to: string };
-  classroomName: string;
-  lat: number;
-  lng: number;
-  radius: number;
-  studentIds: string[];
+  _id:string,
+  section:string,
+  name:string,
+  students:string[],
+  latitude:number,
+  longitude:number,
+  radius:number,
+  courses:any[]
 }
