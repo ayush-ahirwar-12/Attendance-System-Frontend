@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 // import { STUDENTS } from './mockData'; // Keeping dummy students as there wasn't an API provided for them
-import { useFetchCourses } from '@/features/manager/hooks/useManagerApi';
+import { useFetchCourses, useCreateClass } from '@/features/manager/hooks/useManagerApi';
 
 /* ─── helpers ──────────────────────────────────────────────────────── */
 const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -46,11 +46,11 @@ interface ModalProps {
   cls: ClassItem | null;
   courses: Course[];
   students: Student[];
+  isPending?: boolean;
   onClose: () => void;
-  onSave: (data: Omit<ClassItem, 'id'>) => void;
+  onSave: (data: Omit<ClassItem, 'id'>) => void
 }
-
-function ClassModal({ mode, cls, courses, students, onClose, onSave }: ModalProps) {
+function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }: ModalProps) {
   const [form, setForm] = useState<Omit<ClassItem, 'id'>>(
     cls
       ? { section: cls.section, _id: cls._id, name: cls.name, latitude: cls.latitude, longitude: cls.longitude, radius: cls.radius, students: [...cls.students],courses: [...cls.courses] }
@@ -278,10 +278,11 @@ function ClassModal({ mode, cls, courses, students, onClose, onSave }: ModalProp
               Cancel
             </button>
             <button
-              onClick={() => isValid && onSave(form)}
-              disabled={!isValid}
-              className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#b6a0ff] to-[#7e51ff] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(126,81,255,0.35)] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              onClick={() => isValid && !isPending && onSave(form)}
+              disabled={!isValid || isPending}
+              className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#b6a0ff] to-[#7e51ff] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(126,81,255,0.35)] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2"
             >
+              {isPending && <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />}
               {mode === 'add' ? 'Create Class' : 'Save Changes'}
             </button>
           </div>
@@ -375,14 +376,22 @@ export default function ClassesPage() {
 
   
 
+  const createClassMutation = useCreateClass();
+
   const handleSave = (data: Omit<ClassItem, 'id'>) => {
-    // Note: Here you would integrate your POST / PUT API requests
     if (modal?.mode === 'add') {
-      setClasses(prev => [...prev, { id: `cl${Date.now()}`, ...data }]);
+      const { _id, ...createData } = data;
+      createClassMutation.mutate(createData, {
+        onSuccess: () => {
+          setModal(null);
+        },
+        onError: (error) => {
+          console.error("Failed to create class:", error);
+        }
+      });
     } else if (modal?.mode === 'edit' && modal.cls) {
       setClasses(prev => prev.map(c => c._id === modal.cls!._id ? { ...c, ...data } : c));
-    }
-    setModal(null);
+      setModal(null)}
   };
 
   const handleDelete = (id: string) => {
@@ -415,7 +424,7 @@ export default function ClassesPage() {
           <Plus size={15} /> Create Class
         </button>
       </div>
-
+m
       {/* Stats */}
       <div className="flex gap-3 mb-5">
         {[
@@ -449,7 +458,7 @@ export default function ClassesPage() {
         <table className="w-full border-separate border-spacing-y-1">
           <thead>
             <tr>
-              {['Section', 'Course', 'Schedule', 'Classroom', 'Students', 'GPS', 'Actions'].map(h => (
+              {['Section', 'Course', 'Classroom', 'Students', 'GPS', 'Actions'].map(h => (
                 <th key={h} className="text-left text-[11px] font-semibold tracking-[0.06em] uppercase text-[#aba9b9] px-3 py-2.5">{h}</th>
               ))}
             </tr>
@@ -557,6 +566,7 @@ export default function ClassesPage() {
           cls={modal.cls}
           courses={courses}
           students={students}
+          isPending={createClassMutation.isPending}
           onClose={() => setModal(null)}
           onSave={handleSave}
         />
@@ -579,7 +589,7 @@ export default function ClassesPage() {
                 Cancel
               </button>
               <button onClick={() => handleDelete(deleteId)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#ff716c] to-[#ff928c] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(255,113,108,0.3)] transition-all">
-                Delete
+                Delete  
               </button>
             </div>
           </div>

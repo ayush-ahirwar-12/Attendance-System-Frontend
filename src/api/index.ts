@@ -4,3 +4,4 @@ export * from "./user/update";
 export * from "./auth/verify"
 
 export * from "./manager/getCourse";
+export * from "./manager/createClass";
