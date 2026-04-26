@@ -24,11 +24,11 @@ export const STUDENTS: Student[] = [
 ];
 
 export const INITIAL_COURSES: Course[] = [
-  { id: 'c1', code: 'CS301', name: 'Algorithm Design',    department: 'CS',   teacherId: 't1', status: 'Active'   },
-  { id: 'c2', code: 'CS205', name: 'Data Structures',     department: 'CS',   teacherId: 't2', status: 'Active'   },
-  { id: 'c3', code: 'CS401', name: 'Machine Learning',    department: 'CS',   teacherId: null, status: 'Inactive' },
-  { id: 'c4', code: 'CS102', name: 'Python Programming',  department: 'CS',   teacherId: 't3', status: 'Active'   },
-  { id: 'c5', code: 'EC201', name: 'Digital Electronics', department: 'ECE',  teacherId: 't4', status: 'Active'   },
+  { _id: 'c1', code: 'CS301', name: 'Algorithm Design',    class: 'cl1',   teacher: 't1' },
+  { _id: 'c2', code: 'CS205', name: 'Data Structures',     class: 'cl1',   teacher: 't2' },
+  { _id: 'c3', code: 'CS401', name: 'Machine Learning',    class: 'cl2',   teacher: null },
+  { _id: 'c4', code: 'CS102', name: 'Python Programming',  class: 'cl3',   teacher: 't3' },
+  { _id: 'c5', code: 'EC201', name: 'Digital Electronics', class: 'cl4',   teacher: 't4' },
 ];
 
 export const INITIAL_CLASSES: ClassItem[] = [

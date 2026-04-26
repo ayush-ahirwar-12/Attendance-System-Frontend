@@ -2,28 +2,19 @@
 
 import React, { useState } from 'react';
 import { Search, Plus, Pencil, Trash2, UserCheck, X, Check } from 'lucide-react';
-import type { Course, Teacher } from './types';
-import { INITIAL_COURSES, TEACHERS } from './mockData';
+import type { Course, Teacher, ClassItem } from './types';
+import { INITIAL_COURSES, TEACHERS, INITIAL_CLASSES } from './mockData';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
-const DEPARTMENTS = ['CS', 'ECE', 'Math', 'Physics', 'Mechanical'];
-
-const StatusBadge = ({ status }: { status: Course['status'] }) =>
-  status === 'Active'
-    ? <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(104,250,221,0.12)] text-[#68fadd]">● Active</span>
-    : <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(255,113,108,0.12)] text-[#ff716c]">● Inactive</span>;
-
 const Avatar = ({ initials, color = 'from-[#7e51ff] to-[#56ebcf]' }: { initials: string; color?: string }) => (
   <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-[10px] font-bold text-white shrink-0`}>
     {initials}
   </div>
 );
 
-type FilterType = 'All' | 'Active' | 'Inactive';
-
 /* ─── empty course form ────────────────────────────────────────────── */
-const emptyForm = (): Omit<Course, 'id'> => ({
-  code: '', name: '', department: 'CS', teacherId: null, status: 'Active',
+const emptyForm = (): Omit<Course, '_id' | 'createdAt' | 'updatedAt'> => ({
+  code: '', name: '', class: '', teacher: null,
 });
 
 /* ─── modal ────────────────────────────────────────────────────────── */
@@ -31,17 +22,18 @@ interface ModalProps {
   mode: 'add' | 'edit' | 'assign';
   course: Course | null;
   teachers: Teacher[];
+  classes: ClassItem[];
   onClose: () => void;
-  onSave: (data: Omit<Course, 'id'>) => void;
+  onSave: (data: Omit<Course, '_id' | 'createdAt' | 'updatedAt'>) => void;
   onAssign: (courseId: string, teacherId: string | null) => void;
 }
 
-function CourseModal({ mode, course, teachers, onClose, onSave, onAssign }: ModalProps) {
-  const [form, setForm] = useState<Omit<Course, 'id'>>(
-    course ? { code: course.code, name: course.name, department: course.department, teacherId: course.teacherId, status: course.status }
+function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssign }: ModalProps) {
+  const [form, setForm] = useState<Omit<Course, '_id' | 'createdAt' | 'updatedAt'>>(
+    course ? { code: course.code, name: course.name, class: course.class, teacher: course.teacher }
            : emptyForm()
   );
-  const [assignTeacher, setAssignTeacher] = useState<string | null>(course?.teacherId ?? null);
+  const [assignTeacher, setAssignTeacher] = useState<string | null>(course?.teacher ?? null);
 
   const inputCls = 'w-full bg-[#12121e] border border-[rgba(71,71,84,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#e9e6f7] placeholder:text-[#aba9b9] focus:outline-none focus:border-[rgba(182,160,255,0.4)] focus:bg-[#0d0d18] transition-all';
   const labelCls = 'block text-[10px] font-semibold tracking-widest uppercase text-[#aba9b9] mb-1.5';
@@ -76,9 +68,10 @@ function CourseModal({ mode, course, teachers, onClose, onSave, onAssign }: Moda
                   <input className={inputCls} placeholder="e.g. CS301" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} />
                 </div>
                 <div>
-                  <label className={labelCls}>Department</label>
-                  <select className={inputCls} value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}>
-                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  <label className={labelCls}>Class</label>
+                  <select className={inputCls} value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))}>
+                    <option value="">— Select Class —</option>
+                    {classes.map(c => <option key={c._id || (c as any).id} value={c._id || (c as any).id}>{c.section} {c.name ? `(${c.name})` : ''}</option>)}
                   </select>
                 </div>
               </div>
@@ -88,30 +81,10 @@ function CourseModal({ mode, course, teachers, onClose, onSave, onAssign }: Moda
               </div>
               <div>
                 <label className={labelCls}>Assign Teacher</label>
-                <select className={inputCls} value={form.teacherId ?? ''} onChange={e => setForm(f => ({ ...f, teacherId: e.target.value || null }))}>
+                <select className={inputCls} value={form.teacher ?? ''} onChange={e => setForm(f => ({ ...f, teacher: e.target.value || null }))}>
                   <option value="">— Unassigned —</option>
                   {teachers.map(t => <option key={t.id} value={t.id}>{t.name} ({t.department})</option>)}
                 </select>
-              </div>
-              <div>
-                <label className={labelCls}>Status</label>
-                <div className="flex gap-2">
-                  {(['Active', 'Inactive'] as Course['status'][]).map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setForm(f => ({ ...f, status: s }))}
-                      className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all border ${
-                        form.status === s
-                          ? s === 'Active'
-                            ? 'bg-[rgba(104,250,221,0.15)] text-[#68fadd] border-[rgba(104,250,221,0.3)]'
-                            : 'bg-[rgba(255,113,108,0.15)] text-[#ff716c] border-[rgba(255,113,108,0.3)]'
-                          : 'bg-[#12121e] text-[#aba9b9] border-[rgba(71,71,84,0.3)] hover:text-[#e9e6f7]'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           ) : (
@@ -159,12 +132,12 @@ function CourseModal({ mode, course, teachers, onClose, onSave, onAssign }: Moda
           <button
             onClick={() => {
               if (mode === 'assign' && course) {
-                onAssign(course.id, assignTeacher);
+                onAssign(course._id, assignTeacher);
               } else {
                 onSave(form);
               }
             }}
-            disabled={mode !== 'assign' && (!form.code.trim() || !form.name.trim())}
+            disabled={mode !== 'assign' && (!form.code.trim() || !form.name.trim() || !form.class)}
             className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#b6a0ff] to-[#7e51ff] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(126,81,255,0.35)] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
             {mode === 'assign' ? 'Confirm Assign' : mode === 'add' ? 'Create Course' : 'Save Changes'}
@@ -179,46 +152,39 @@ function CourseModal({ mode, course, teachers, onClose, onSave, onAssign }: Moda
 export default function CoursesPage() {
   const [courses, setCourses]     = useState<Course[]>(INITIAL_COURSES);
   const [search, setSearch]       = useState('');
-  const [filter, setFilter]       = useState<FilterType>('All');
   const [modal, setModal]         = useState<{ mode: 'add' | 'edit' | 'assign'; course: Course | null } | null>(null);
   const [deleteId, setDeleteId]   = useState<string | null>(null);
 
   const teachers = TEACHERS;
-
-  /* counts */
-  const counts: Record<FilterType, number> = {
-    All:      courses.length,
-    Active:   courses.filter(c => c.status === 'Active').length,
-    Inactive: courses.filter(c => c.status === 'Inactive').length,
-  };
+  const classes = INITIAL_CLASSES;
 
   const filtered = courses.filter(c => {
-    const matchSearch = c.code.toLowerCase().includes(search.toLowerCase()) || c.name.toLowerCase().includes(search.toLowerCase());
-    return (filter === 'All' || c.status === filter) && matchSearch;
+    return c.code.toLowerCase().includes(search.toLowerCase()) || c.name.toLowerCase().includes(search.toLowerCase());
   });
 
   /* CRUD handlers */
-  const handleSave = (data: Omit<Course, 'id'>) => {
+  const handleSave = (data: Omit<Course, '_id' | 'createdAt' | 'updatedAt'>) => {
     if (modal?.mode === 'add') {
-      const id = `c${Date.now()}`;
-      setCourses(prev => [...prev, { id, ...data }]);
+      const _id = `c${Date.now()}`;
+      setCourses(prev => [...prev, { _id, ...data }]);
     } else if (modal?.mode === 'edit' && modal.course) {
-      setCourses(prev => prev.map(c => c.id === modal.course!.id ? { ...c, ...data } : c));
+      setCourses(prev => prev.map(c => c._id === modal.course!._id ? { ...c, ...data } : c));
     }
     setModal(null);
   };
 
   const handleAssign = (courseId: string, teacherId: string | null) => {
-    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, teacherId } : c));
+    setCourses(prev => prev.map(c => c._id === courseId ? { ...c, teacher: teacherId } : c));
     setModal(null);
   };
 
   const handleDelete = (id: string) => {
-    setCourses(prev => prev.filter(c => c.id !== id));
+    setCourses(prev => prev.filter(c => c._id !== id));
     setDeleteId(null);
   };
 
-  const getTeacher = (id: string | null) => teachers.find(t => t.id === id) ?? null;
+  const getTeacher = (id: string | null | undefined) => teachers.find(t => t.id === id) ?? null;
+  const getClassItem = (id: string) => classes.find(c => c._id === id || (c as any).id === id) ?? null;
 
   return (
     <div>
@@ -238,15 +204,13 @@ export default function CoursesPage() {
 
       {/* Stats chips */}
       <div className="flex gap-3 mb-5">
-        {(Object.entries(counts) as [FilterType, number][]).map(([key, val]) => (
-          <div key={key} className="bg-[#181826] rounded-lg px-5 py-2.5 flex items-center gap-2.5">
-            <span className={`text-xl font-bold ${key === 'Active' ? 'text-[#68fadd]' : key === 'Inactive' ? 'text-[#ff716c]' : 'text-[#e9e6f7]'}`}>{val}</span>
-            <span className="text-xs text-[#aba9b9]">{key}</span>
-          </div>
-        ))}
+        <div className="bg-[#181826] rounded-lg px-5 py-2.5 flex items-center gap-2.5">
+          <span className="text-xl font-bold text-[#e9e6f7]">{courses.length}</span>
+          <span className="text-xs text-[#aba9b9]">Total Courses</span>
+        </div>
       </div>
 
-      {/* Search + Filter */}
+      {/* Search */}
       <div className="flex items-center gap-3 mb-5">
         <div className="relative max-w-xs w-full">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aba9b9] pointer-events-none" />
@@ -257,18 +221,6 @@ export default function CoursesPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex bg-[#12121e] rounded-[10px] p-1 gap-1">
-          {(['All', 'Active', 'Inactive'] as FilterType[]).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
-                filter === f ? 'bg-[#242434] text-[#e9e6f7]' : 'text-[#aba9b9] hover:text-[#e9e6f7]'}`}
-            >
-              {f} <span className="opacity-60 text-[11px]">({counts[f]})</span>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Table */}
@@ -276,22 +228,30 @@ export default function CoursesPage() {
         <table className="w-full border-separate border-spacing-y-1">
           <thead>
             <tr>
-              {['Code', 'Course Name', 'Dept.', 'Assigned Teacher', 'Status', 'Actions'].map(h => (
+              {['Code', 'Course Name', 'Class', 'Assigned Teacher', 'Actions'].map(h => (
                 <th key={h} className="text-left text-[11px] font-semibold tracking-[0.06em] uppercase text-[#aba9b9] px-3 py-2.5">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.map(course => {
-              const teacher = getTeacher(course.teacherId);
+              const teacher = getTeacher(course.teacher);
+              const classItem = getClassItem(course.class);
+              
               return (
-                <tr key={course.id} className="bg-[#12121e] hover:bg-[#1e1e2d] transition-colors group">
+                <tr key={course._id} className="bg-[#12121e] hover:bg-[#1e1e2d] transition-colors group">
                   <td className="px-3 py-3 rounded-l-lg">
                     <span className="font-semibold text-[#b6a0ff] text-sm font-mono">{course.code}</span>
                   </td>
                   <td className="px-3 py-3 text-[13px] font-medium text-[#e9e6f7]">{course.name}</td>
                   <td className="px-3 py-3">
-                    <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">{course.department}</span>
+                    {classItem ? (
+                      <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">
+                        {classItem.section} {classItem.name ? `(${classItem.name})` : ''}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">Unassigned Class</span>
+                    )}
                   </td>
                   <td className="px-3 py-3">
                     {teacher ? (
@@ -303,7 +263,6 @@ export default function CoursesPage() {
                       <span className="text-[13px] text-[#ff716c] italic">Unassigned</span>
                     )}
                   </td>
-                  <td className="px-3 py-3"><StatusBadge status={course.status} /></td>
                   <td className="px-3 py-3 rounded-r-lg">
                     <div className="flex gap-1.5">
                       <button
@@ -321,7 +280,7 @@ export default function CoursesPage() {
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => setDeleteId(course.id)}
+                        onClick={() => setDeleteId(course._id)}
                         title="Delete"
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-[rgba(255,113,108,0.08)] text-[#ff716c] hover:bg-[rgba(255,113,108,0.15)] hover:scale-105 transition-all"
                       >
@@ -334,8 +293,8 @@ export default function CoursesPage() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-[#aba9b9] text-sm">
-                  No courses match your search / filter.
+                <td colSpan={5} className="text-center py-12 text-[#aba9b9] text-sm">
+                  No courses match your search.
                 </td>
               </tr>
             )}
@@ -349,6 +308,7 @@ export default function CoursesPage() {
           mode={modal.mode}
           course={modal.course}
           teachers={teachers}
+          classes={classes}
           onClose={() => setModal(null)}
           onSave={handleSave}
           onAssign={handleAssign}
@@ -365,7 +325,7 @@ export default function CoursesPage() {
             </div>
             <h3 className="text-base font-bold text-[#e9e6f7] text-center">Delete Course?</h3>
             <p className="text-sm text-[#aba9b9] text-center mt-1 mb-5">
-              This will permanently remove <span className="text-[#e9e6f7] font-semibold">{courses.find(c => c.id === deleteId)?.code}</span> and all related data.
+              This will permanently remove <span className="text-[#e9e6f7] font-semibold">{courses.find(c => c._id === deleteId)?.code}</span> and all related data.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-[#aba9b9] border border-[rgba(71,71,84,0.4)] hover:bg-[#1e1e2d] transition-all">

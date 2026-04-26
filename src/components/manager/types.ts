@@ -19,7 +19,10 @@ export interface Course {
   _id: string;
   code: string;
   name: string;
-
+  class: string;
+  teacher?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ClassItem {
