@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Plus, Pencil, Trash2, UserCheck, X, Check } from 'lucide-react';
-import type { Course, Teacher, ClassItem } from './types';
-import { INITIAL_COURSES, TEACHERS, INITIAL_CLASSES } from './mockData';
+import type { Course } from './types';
+import { useQueryClient } from '@tanstack/react-query';
+import {useGetClasses } from '@/features/manager/hooks/useManagerApi';
+import { useGetTeachers } from '@/features/user/hooks/useUserApi';
+import { useGetCourses, useCreateCourse } from '@/features/course/hooks/useCourseApi';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 const Avatar = ({ initials, color = 'from-[#7e51ff] to-[#56ebcf]' }: { initials: string; color?: string }) => (
@@ -21,14 +24,14 @@ const emptyForm = (): Omit<Course, '_id' | 'createdAt' | 'updatedAt'> => ({
 interface ModalProps {
   mode: 'add' | 'edit' | 'assign';
   course: Course | null;
-  teachers: Teacher[];
-  classes: ClassItem[];
+  backendClasses: any[];
+  backendTeachers: any[];
   onClose: () => void;
   onSave: (data: Omit<Course, '_id' | 'createdAt' | 'updatedAt'>) => void;
   onAssign: (courseId: string, teacherId: string | null) => void;
 }
 
-function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssign }: ModalProps) {
+function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, onSave, onAssign }: ModalProps) {
   const [form, setForm] = useState<Omit<Course, '_id' | 'createdAt' | 'updatedAt'>>(
     course ? { code: course.code, name: course.name, class: course.class, teacher: course.teacher }
            : emptyForm()
@@ -71,7 +74,11 @@ function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssig
                   <label className={labelCls}>Class</label>
                   <select className={inputCls} value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))}>
                     <option value="">— Select Class —</option>
-                    {classes.map(c => <option key={c._id || (c as any).id} value={c._id || (c as any).id}>{c.section} {c.name ? `(${c.name})` : ''}</option>)}
+                    {backendClasses.map(c => (
+                      <option key={c._id || (c as any).id} value={c._id}>
+                        {c.section} {c.name ? `(${c.name})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -83,7 +90,11 @@ function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssig
                 <label className={labelCls}>Assign Teacher</label>
                 <select className={inputCls} value={form.teacher ?? ''} onChange={e => setForm(f => ({ ...f, teacher: e.target.value || null }))}>
                   <option value="">— Unassigned —</option>
-                  {teachers.map(t => <option key={t.id} value={t.id}>{t.name} ({t.department})</option>)}
+                  {backendTeachers.map(t => (
+                    <option key={t._id || t.id} value={t._id}>
+                      {t.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -104,19 +115,18 @@ function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssig
                   </div>
                   {assignTeacher === null && <Check size={14} className="ml-auto" />}
                 </button>
-                {teachers.map(t => (
+                {backendTeachers.map(t => (
                   <button
-                    key={t.id}
-                    onClick={() => setAssignTeacher(t.id)}
+                    key={t._id || t.id}
+                    onClick={() => setAssignTeacher(t.name)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left ${
-                      assignTeacher === t.id ? 'bg-[rgba(182,160,255,0.12)] text-[#b6a0ff]' : 'bg-[#12121e] text-[#aba9b9] hover:bg-[#1e1e2d]'}`}
+                      assignTeacher === t.name ? 'bg-[rgba(182,160,255,0.12)] text-[#b6a0ff]' : 'bg-[#12121e] text-[#aba9b9] hover:bg-[#1e1e2d]'}`}
                   >
-                    <Avatar initials={t.initials} />
+                    <Avatar initials={t.name ? t.name.charAt(0).toUpperCase() : '?'} />
                     <div>
                       <div className="text-sm font-medium">{t.name}</div>
-                      <div className="text-[11px] text-[#aba9b9]">{t.department} · {t.email}</div>
                     </div>
-                    {assignTeacher === t.id && <Check size={14} className="ml-auto" />}
+                    {assignTeacher === t.name && <Check size={14} className="ml-auto" />}
                   </button>
                 ))}
               </div>
@@ -150,41 +160,84 @@ function CourseModal({ mode, course, teachers, classes, onClose, onSave, onAssig
 
 /* ─── main page ────────────────────────────────────────────────────── */
 export default function CoursesPage() {
-  const [courses, setCourses]     = useState<Course[]>(INITIAL_COURSES);
+
+
+  const queryClient = useQueryClient();
+  const { data: fetchedCourses, isPending } = useGetCourses();  
+  const { mutate: createCourseMutate } = useCreateCourse();
+  const { data: fetchedClassesData } = useGetClasses();
+  const { data: fetchedTeachersData } = useGetTeachers();
+
+  const backendClasses = useMemo(() => {
+    if (!fetchedClassesData) return [];
+    return Array.isArray(fetchedClassesData) ? fetchedClassesData : (fetchedClassesData.data || []);
+  }, [fetchedClassesData]);
+
+  const backendTeachers = useMemo(() => {
+    if (!fetchedTeachersData) return [];
+    return Array.isArray(fetchedTeachersData) ? fetchedTeachersData : (fetchedTeachersData.data || []);
+  }, [fetchedTeachersData]);
+  
+  const courses: Course[] = useMemo(() => {
+    if (!fetchedCourses) return [];
+    if (Array.isArray(fetchedCourses)) return fetchedCourses;
+    if (fetchedCourses.courses && Array.isArray(fetchedCourses.courses)) return fetchedCourses.courses;
+    if (fetchedCourses.data && Array.isArray(fetchedCourses.data)) return fetchedCourses.data;
+    return [];
+  }, [fetchedCourses]);
+
   const [search, setSearch]       = useState('');
   const [modal, setModal]         = useState<{ mode: 'add' | 'edit' | 'assign'; course: Course | null } | null>(null);
   const [deleteId, setDeleteId]   = useState<string | null>(null);
-
-  const teachers = TEACHERS;
-  const classes = INITIAL_CLASSES;
 
   const filtered = courses.filter(c => {
     return c.code.toLowerCase().includes(search.toLowerCase()) || c.name.toLowerCase().includes(search.toLowerCase());
   });
 
+
+  /* Cache updater helper */
+  const updateCache = (updater: (arr: Course[]) => Course[]) => {
+    queryClient.setQueryData(["allCourses"], (old: any) => {
+      if (!old) return old;
+      if (Array.isArray(old)) return updater(old);
+      if (old.courses) return { ...old, courses: updater(old.courses) };
+      if (old.data) return { ...old, data: updater(old.data) };
+      return old;
+    });
+  };
+
   /* CRUD handlers */
   const handleSave = (data: Omit<Course, '_id' | 'createdAt' | 'updatedAt'>) => {
     if (modal?.mode === 'add') {
-      const _id = `c${Date.now()}`;
-      setCourses(prev => [...prev, { _id, ...data }]);
+      createCourseMutate(data, {
+        onSuccess: () => {
+          setModal(null);
+        }
+      });
     } else if (modal?.mode === 'edit' && modal.course) {
-      setCourses(prev => prev.map(c => c._id === modal.course!._id ? { ...c, ...data } : c));
+      updateCache(prev => prev.map(c => c._id === modal.course!._id ? { ...c, ...data } : c));
+      setModal(null);
     }
-    setModal(null);
   };
 
   const handleAssign = (courseId: string, teacherId: string | null) => {
-    setCourses(prev => prev.map(c => c._id === courseId ? { ...c, teacher: teacherId } : c));
+    updateCache(prev => prev.map(c => c._id === courseId ? { ...c, teacher: teacherId } : c));
     setModal(null);
   };
 
   const handleDelete = (id: string) => {
-    setCourses(prev => prev.filter(c => c._id !== id));
+    updateCache(prev => prev.filter(c => c._id !== id));
     setDeleteId(null);
   };
 
-  const getTeacher = (id: string | null | undefined) => teachers.find(t => t.id === id) ?? null;
-  const getClassItem = (id: string) => classes.find(c => c._id === id || (c as any).id === id) ?? null;
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgba(182,160,255,1)]"></div>
+        <span className="ml-3 text-[#aba9b9] text-sm font-medium tracking-wide">Loading courses data...</span>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -235,9 +288,6 @@ export default function CoursesPage() {
           </thead>
           <tbody>
             {filtered.map(course => {
-              const teacher = getTeacher(course.teacher);
-              const classItem = getClassItem(course.class);
-              
               return (
                 <tr key={course._id} className="bg-[#12121e] hover:bg-[#1e1e2d] transition-colors group">
                   <td className="px-3 py-3 rounded-l-lg">
@@ -245,19 +295,19 @@ export default function CoursesPage() {
                   </td>
                   <td className="px-3 py-3 text-[13px] font-medium text-[#e9e6f7]">{course.name}</td>
                   <td className="px-3 py-3">
-                    {classItem ? (
+                    {course.class ? (
                       <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">
-                        {classItem.section} {classItem.name ? `(${classItem.name})` : ''}
+                        {course.class}
                       </span>
                     ) : (
                       <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">Unassigned Class</span>
                     )}
                   </td>
                   <td className="px-3 py-3">
-                    {teacher ? (
+                    {course.teacher ? (
                       <div className="flex items-center gap-2">
-                        <Avatar initials={teacher.initials} />
-                        <span className="text-[13px] text-[#e9e6f7]">{teacher.name}</span>
+                        <Avatar initials={course.teacher.charAt(0).toUpperCase()} />
+                        <span className="text-[13px] text-[#e9e6f7]">{course.teacher}</span>
                       </div>
                     ) : (
                       <span className="text-[13px] text-[#ff716c] italic">Unassigned</span>
@@ -307,8 +357,8 @@ export default function CoursesPage() {
         <CourseModal
           mode={modal.mode}
           course={modal.course}
-          teachers={teachers}
-          classes={classes}
+          backendClasses={backendClasses}
+          backendTeachers={backendTeachers}
           onClose={() => setModal(null)}
           onSave={handleSave}
           onAssign={handleAssign}

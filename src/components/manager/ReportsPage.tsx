@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { BarChart3, TrendingUp, Users, BookOpen, CalendarDays } from 'lucide-react';
-import { INITIAL_COURSES, INITIAL_CLASSES, STUDENTS, TEACHERS } from './mockData';
+import { BookOpen, CalendarDays, TrendingUp, Users, BarChart3 } from 'lucide-react';
+import { INITIAL_CLASSES, STUDENTS, TEACHERS } from './mockData';
+import { useGetCourses } from '@/features/course/hooks/useCourseApi';
 
 const StatCard = ({ icon, label, value, color, bg }: {
   icon: React.ReactNode; label: string; value: string | number; color: string; bg: string;
@@ -15,8 +16,11 @@ const StatCard = ({ icon, label, value, color, bg }: {
 );
 
 export default function ReportsPage() {
-  const activeCourses   = INITIAL_COURSES.filter(c => c.status === 'Active').length;
-  const assignedTeachers = new Set(INITIAL_COURSES.map(c => c.teacherId).filter(Boolean)).size;
+  const { data: fetchedCourses, isPending } = useGetCourses();
+  const courses = fetchedCourses ? (Array.isArray(fetchedCourses) ? fetchedCourses : (fetchedCourses.courses || fetchedCourses.data || [])) : [];
+
+  const activeCourses   = courses.length;
+  const assignedTeachers = new Set(courses.map((c: any) => c.teacher).filter(Boolean)).size;
   const totalStudents   = STUDENTS.length;
   const totalClasses    = INITIAL_CLASSES.length;
 
@@ -42,15 +46,15 @@ export default function ReportsPage() {
           <div className="text-base font-semibold text-[#e9e6f7]">Course Breakdown</div>
         </div>
         <div className="space-y-3">
-          {INITIAL_COURSES.map(course => {
-            const teacher = TEACHERS.find(t => t.id === course.teacherId);
-            const classCount = INITIAL_CLASSES.filter(cl => cl.courseId === course.id).length;
+          {courses.map((course: any) => {
+            const teacher = TEACHERS.find(t => t.id === course.teacher);
+            const classCount = INITIAL_CLASSES.filter(cl => cl.courseId === course._id).length;
             const studentCount = new Set(
-              INITIAL_CLASSES.filter(cl => cl.courseId === course.id).flatMap(cl => cl.studentIds)
+              INITIAL_CLASSES.filter(cl => cl.courseId === course._id).flatMap(cl => cl.studentIds)
             ).size;
 
             return (
-              <div key={course.id} className="bg-[#12121e] rounded-lg px-4 py-3 flex items-center gap-4">
+              <div key={course._id} className="bg-[#12121e] rounded-lg px-4 py-3 flex items-center gap-4">
                 <div className="w-16 shrink-0">
                   <span className="text-xs font-bold font-mono text-[#b6a0ff]">{course.code}</span>
                 </div>
@@ -68,12 +72,8 @@ export default function ReportsPage() {
                     <div className="text-[10px] text-[#aba9b9] uppercase tracking-wide">Students</div>
                   </div>
                   <div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                      course.status === 'Active'
-                        ? 'bg-[rgba(104,250,221,0.12)] text-[#68fadd]'
-                        : 'bg-[rgba(255,113,108,0.12)] text-[#ff716c]'
-                    }`}>
-                      {course.status}
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(104,250,221,0.12)] text-[#68fadd]`}>
+                      Active
                     </span>
                   </div>
                 </div>
@@ -99,10 +99,10 @@ export default function ReportsPage() {
           </thead>
           <tbody>
             {TEACHERS.map(teacher => {
-              const assignedCourses = INITIAL_COURSES.filter(c => c.teacherId === teacher.id);
-              const classCount = INITIAL_CLASSES.filter(cl => assignedCourses.some(c => c.id === cl.courseId)).length;
+              const assignedCourses = courses.filter((c: any) => c.teacher === teacher.id);
+              const classCount = INITIAL_CLASSES.filter(cl => assignedCourses.some((c: any) => c._id === cl.courseId)).length;
               const studentCount = new Set(
-                INITIAL_CLASSES.filter(cl => assignedCourses.some(c => c.id === cl.courseId)).flatMap(cl => cl.studentIds)
+                INITIAL_CLASSES.filter(cl => assignedCourses.some((c: any) => c._id === cl.courseId)).flatMap(cl => cl.studentIds)
               ).size;
 
               return (

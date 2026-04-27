@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 // import { STUDENTS } from './mockData'; // Keeping dummy students as there wasn't an API provided for them
-import { useFetchCourses, useCreateClass } from '@/features/manager/hooks/useManagerApi';
+import { useGetClasses, useCreateClass } from '@/features/manager/hooks/useManagerApi';
 
 /* ─── helpers ──────────────────────────────────────────────────────── */
 const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -301,7 +301,7 @@ function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }
 
 /* ─── main page ────────────────────────────────────────────────────── */
 export default function ClassesPage() {
-  const { data: CourseData, isPending } = useFetchCourses(); 
+  const { data: CourseData, isPending } = useGetClasses(); 
 
   // Dynamically extract all unique students from the fetched class payload
   const students = useMemo(() => {

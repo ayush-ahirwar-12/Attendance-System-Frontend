@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/api";
 
-export const useFetchCourses = ()=>{
+export const useGetClasses = ()=>{
     return useQuery({
-        queryKey:["courses"],
-        queryFn:api.getCourses,
+        queryKey:["classes"],
+        queryFn:api.getClasses,
         retry:0
     })
 };
@@ -14,7 +14,8 @@ export const useCreateClass = () => {
     return useMutation({
         mutationFn: api.createClass,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["courses"] });
+            queryClient.invalidateQueries({ queryKey: ["classes"] });
         }
     });
 };
+

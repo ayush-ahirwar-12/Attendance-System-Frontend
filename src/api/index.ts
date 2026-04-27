@@ -3,5 +3,10 @@ export * from "./auth/register";
 export * from "./user/update";
 export * from "./auth/verify"
 
-export * from "./manager/getCourse";
-export * from "./manager/createClass";
+export * from "./class/getClasses";
+export * from "./class/createClass";
+
+export * from "./course/getCourses";
+export * from "./course/createCourse";
+
+export * from "./user/getTeachers";

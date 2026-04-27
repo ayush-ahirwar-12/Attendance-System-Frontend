@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/api";
 
 export const useUpdateUser=()=>{
@@ -9,3 +9,12 @@ export const useUpdateUser=()=>{
         onSuccess:()=>queryClient.invalidateQueries({queryKey:["User"]})
     })
 }
+
+export const useGetTeachers = () => {
+    return useQuery({
+        queryKey: ["teachers"],
+        queryFn: api.getTeachers,
+        retry: 0
+    })
+}
+
