@@ -25,3 +25,9 @@ export const useVerify = ()=>{
     })
 }
 
+export const useLogoutApi = () => {
+    return useMutation({
+        mutationFn: () => api.logout()
+    })
+}
+

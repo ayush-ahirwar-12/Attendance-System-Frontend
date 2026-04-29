@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/api";
+import { Course } from "@/components/manager/types";
 
 export const useGetCourses = () => {
     return useQuery({
@@ -12,7 +13,7 @@ export const useGetCourses = () => {
 export const useCreateCourse = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (body: FormData) => api.createCourse(body),
+        mutationFn: (body: Omit<Course, "_id">) => api.createCourse(body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["allCourses"] });
         }

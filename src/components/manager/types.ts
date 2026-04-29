@@ -21,8 +21,6 @@ export interface Course {
   name: string;
   class: string;
   teacher?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface ClassItem {

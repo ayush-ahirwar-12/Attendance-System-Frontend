@@ -6,6 +6,10 @@ import {
   BarChart3, Settings, ScanFace, LogOut,
 } from 'lucide-react';
 import type { ManagerPage } from './types';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/config/store';
+import Logout from '@/features/auth/components/Logout';
+
 
 const navItems: { id: ManagerPage; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: 'Dashboard',  icon: <LayoutDashboard size={18} /> },
@@ -20,6 +24,8 @@ interface SidebarProps {
 }
 
 export default function ManagerSidebar({ activePage, onNavigate }: SidebarProps) {
+  const {user} = useSelector((state:RootState)=>state.auth)
+
   return (
     <aside className="w-[260px] shrink-0 flex flex-col bg-[#12121e] px-4 py-6 sticky top-0 h-screen overflow-y-auto border-r border-[rgba(182,160,255,0.06)]">
       {/* Logo */}
@@ -55,9 +61,17 @@ export default function ManagerSidebar({ activePage, onNavigate }: SidebarProps)
         <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#aba9b9] hover:bg-[#181826] hover:text-[#e9e6f7] transition-all w-full text-left">
           <Settings size={18} /> Settings
         </button>
-        <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#ff716c] hover:bg-[rgba(255,113,108,0.08)] transition-all w-full text-left">
+
+
+        {/* <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#ff716c] hover:bg-[rgba(255,113,108,0.08)] transition-all w-full text-left">
           <LogOut size={18} /> Logout
-        </button>
+        </button> */}
+
+        <div>
+          <Logout/>
+        </div>
+
+
       </nav>
 
       {/* Profile */}
@@ -66,8 +80,8 @@ export default function ManagerSidebar({ activePage, onNavigate }: SidebarProps)
           MR
         </div>
         <div>
-          <div className="text-[13px] font-semibold text-[#e9e6f7]">Michael Ross</div>
-          <div className="text-[11px] text-[#aba9b9]">Manager · Admin</div>
+          <div className="text-[13px] font-semibold text-[#e9e6f7]">{user?.firstName}</div>
+          <div className="text-[11px] text-[#aba9b9]">{user?.role}</div>
         </div>
       </div>
     </aside>

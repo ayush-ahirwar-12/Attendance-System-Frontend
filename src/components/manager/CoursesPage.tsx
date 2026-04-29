@@ -207,7 +207,7 @@ export default function CoursesPage() {
   };
 
   /* CRUD handlers */
-  const handleSave = (data: Omit<Course, '_id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = (data: Omit<Course, '_id'>) => {
     if (modal?.mode === 'add') {
       createCourseMutate(data, {
         onSuccess: () => {

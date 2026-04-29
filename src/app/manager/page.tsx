@@ -8,6 +8,7 @@ import ClassesPage       from '@/components/manager/ClassesPage';
 import ReportsPage       from '@/components/manager/ReportsPage';
 import type { ManagerPage } from '@/components/manager/types';
 
+
 export default function ManagerPageClient() {
   const [activePage, setActivePage] = useState<ManagerPage>('dashboard');
 
@@ -20,6 +21,7 @@ export default function ManagerPageClient() {
       default:          return <ManagerDashboard onNavigate={setActivePage} />;
     }
   };
+
 
   return (
     <div className="flex min-h-screen bg-[#0d0d18]" style={{ fontFamily: "'Inter', sans-serif" }}>

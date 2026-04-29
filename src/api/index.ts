@@ -2,6 +2,7 @@ export * from "./auth/login";
 export * from "./auth/register";
 export * from "./user/update";
 export * from "./auth/verify"
+export * from "./auth/logout"
 
 export * from "./class/getClasses";
 export * from "./class/createClass";
