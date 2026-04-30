@@ -7,7 +7,7 @@ export type Role = 'admin' | 'user' | 'teacher' | 'student' | 'manager';
 
 export type User = {
   id: string;
-  name: string;
+  firstName: string;
   email: string;
   isVerified:boolean;
   role:Role;
@@ -23,9 +23,7 @@ export async function getCurrentUser(): Promise<User | null> {
   
   try {
     const cookieStore =await cookies();
-    const token = cookieStore.get("access")?.value;
-    console.log(token);
-    
+    const token = cookieStore.get("access")?.value;    
     if (!token) {
       console.log("No token found");
       return null;

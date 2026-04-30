@@ -1,4 +1,4 @@
-export type ManagerPage = 'dashboard' | 'courses' | 'classes' | 'reports';
+export type ManagerPage = 'dashboard' | 'courses' | 'classes' | 'reports'|'users';
 
 export interface Teacher {
   id: string;
