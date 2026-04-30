@@ -13,3 +13,4 @@ export * from "./course/createCourse";
 export * from "./user/getTeachers";
 export * from "./user/getAllUsers";
 export * from "./user/updateRole";
+export * from "./user/getStudents"

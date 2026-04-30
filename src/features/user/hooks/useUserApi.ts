@@ -34,3 +34,12 @@ export const useUpdateRole = () => {
     })
 }
 
+export const useGetStudents = () => {
+    return useQuery({
+        queryKey: ["students"],
+        queryFn: api.getStudents,
+        retry: 0
+    })
+}
+
+
