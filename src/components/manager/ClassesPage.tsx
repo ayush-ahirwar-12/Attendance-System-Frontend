@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 // import { STUDENTS } from './mockData'; // Keeping dummy students as there wasn't an API provided for them
-import { useGetClasses, useCreateClass } from '@/features/manager/hooks/useManagerApi';
+import { useGetClasses, useCreateClass } from '@/features/class/hooks/useClassApi';
+import { useGetStudents } from '@/features/user/hooks/useUserApi';
 
 /* ─── helpers ──────────────────────────────────────────────────────── */
 const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -302,21 +303,19 @@ function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }
 /* ─── main page ────────────────────────────────────────────────────── */
 export default function ClassesPage() {
   const { data: CourseData, isPending } = useGetClasses(); 
+  const { data: studentsData, isPending: isStudentsPending } = useGetStudents();
 
-  // Dynamically extract all unique students from the fetched class payload
+  // Parse students from the API hook
   const students = useMemo(() => {
-    if (!CourseData || !Array.isArray(CourseData)) return [];
+    const rawStudents = Array.isArray(studentsData) ? studentsData : (studentsData?.data || []);
+    if (!Array.isArray(rawStudents)) return [];
     
-    const allStudents = CourseData.flatMap((c: any) => c.students || []);
-    // Deduplicate by student ID using Map
-    const uniqueStudents = Array.from(new Map(allStudents.filter((s: any) => s && s._id).map((s: any) => [s._id, s])).values());
-    
-    return uniqueStudents.map((s: any) => ({
+    return rawStudents.map((s: any) => ({
       _id: s._id,
-      name: s.name || s.email?.split('@')[0] || 'Unknown',
+      name: s.firstName ? `${s.firstName} ${s.lastName || ''}`.trim() : (s.name || s.email?.split('@')[0] || 'Unknown'),
       email: s.email || ''
     })) as Student[];
-  }, [CourseData]);
+  }, [studentsData]);
 
   const [classes, setClasses]   = useState<ClassItem[]>([]);
   const [search, setSearch]     = useState('');
@@ -400,7 +399,7 @@ export default function ClassesPage() {
     setDeleteId(null);
   };
 
-  if (isPending) {
+  if (isPending || isStudentsPending) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgba(182,160,255,1)]"></div>

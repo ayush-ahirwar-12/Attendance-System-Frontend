@@ -19,3 +19,12 @@ export const useCreateClass = () => {
     });
 };
 
+export const useUpdateClass = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: api.updateClass,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["classes"] });
+        }
+    });
+};

@@ -6,6 +6,7 @@ export * from "./auth/logout"
 
 export * from "./class/getClasses";
 export * from "./class/createClass";
+export * from "./class/updateClass";
 
 export * from "./course/getCourses";
 export * from "./course/createCourse";
