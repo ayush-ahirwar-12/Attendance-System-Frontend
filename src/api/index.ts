@@ -7,6 +7,7 @@ export * from "./auth/logout"
 export * from "./class/getClasses";
 export * from "./class/createClass";
 export * from "./class/updateClass";
+export * from "./class/deleteClass";
 
 export * from "./course/getCourses";
 export * from "./course/createCourse";
@@ -14,4 +15,4 @@ export * from "./course/createCourse";
 export * from "./user/getTeachers";
 export * from "./user/getAllUsers";
 export * from "./user/updateRole";
-export * from "./user/getStudents"
+export * from "./user/getStudents";

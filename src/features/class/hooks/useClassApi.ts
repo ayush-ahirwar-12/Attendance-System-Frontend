@@ -28,3 +28,13 @@ export const useUpdateClass = () => {
         }
     });
 };
+
+export const useDeleteClass = ()=>{
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: api.deleteClass,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["classes"] });
+        }
+    })
+}
