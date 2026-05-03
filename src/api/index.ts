@@ -11,6 +11,8 @@ export * from "./class/deleteClass";
 
 export * from "./course/getCourses";
 export * from "./course/createCourse";
+export * from "./course/updateCourse";
+export * from "./course/deleteCourse";
 
 export * from "./user/getTeachers";
 export * from "./user/getAllUsers";

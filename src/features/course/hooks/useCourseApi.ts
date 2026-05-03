@@ -19,3 +19,23 @@ export const useCreateCourse = () => {
         }
     });
 };
+
+export const useUpdateCourse = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, body }: { id: string; body: FormData }) => api.updateCourse(id, body),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allCourses"] });
+        }
+    });
+};
+
+export const useDeleteCourse = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => api.deleteCourse(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["allCourses"] });    
+        }
+    });
+};
