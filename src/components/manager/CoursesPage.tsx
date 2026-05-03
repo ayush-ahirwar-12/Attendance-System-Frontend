@@ -32,11 +32,24 @@ interface ModalProps {
 }
 
 function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, onSave, onAssign }: ModalProps) {
+  // Helpers to resolve names to backend IDs for the select inputs
+  const getTeacherId = (val: string | null | undefined) => {
+    if (!val) return null;
+    const found = backendTeachers.find(t => t.name === val || t._id === val || t.id === val);
+    return found ? (found._id || found.id) : val;
+  };
+
+  const getClassId = (val: string | null | undefined) => {
+    if (!val) return '';
+    const found = backendClasses.find(c => c.section === val || c.name === val || c._id === val || c.id === val || `${c.section} ${c.name ? `(${c.name})` : ''}`.trim() === val);
+    return found ? (found._id || found.id) : val;
+  };
+
   const [form, setForm] = useState<Omit<Course, '_id' | 'createdAt' | 'updatedAt'>>(
-    course ? { code: course.code, name: course.name, class: course.class, teacher: course.teacher }
+    course ? { code: course.code, name: course.name, class: getClassId(course.class), teacher: getTeacherId(course.teacher) }
            : emptyForm()
   );
-  const [assignTeacher, setAssignTeacher] = useState<string | null>(course?.teacher ?? null);
+  const [assignTeacher, setAssignTeacher] = useState<string | null>(getTeacherId(course?.teacher) ?? null);
 
   const inputCls = 'w-full bg-[#12121e] border border-[rgba(71,71,84,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#e9e6f7] placeholder:text-[#aba9b9] focus:outline-none focus:border-[rgba(182,160,255,0.4)] focus:bg-[#0d0d18] transition-all';
   const labelCls = 'block text-[10px] font-semibold tracking-widest uppercase text-[#aba9b9] mb-1.5';
@@ -118,15 +131,15 @@ function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, o
                 {backendTeachers.map(t => (
                   <button
                     key={t._id || t.id}
-                    onClick={() => setAssignTeacher(t.name)}
+                    onClick={() => setAssignTeacher(t._id || t.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left ${
-                      assignTeacher === t.name ? 'bg-[rgba(182,160,255,0.12)] text-[#b6a0ff]' : 'bg-[#12121e] text-[#aba9b9] hover:bg-[#1e1e2d]'}`}
+                      assignTeacher === (t._id || t.id) ? 'bg-[rgba(182,160,255,0.12)] text-[#b6a0ff]' : 'bg-[#12121e] text-[#aba9b9] hover:bg-[#1e1e2d]'}`}
                   >
                     <Avatar initials={t.name ? t.name.charAt(0).toUpperCase() : '?'} />
                     <div>
                       <div className="text-sm font-medium">{t.name}</div>
                     </div>
-                    {assignTeacher === t.name && <Check size={14} className="ml-auto" />}
+                    {assignTeacher === (t._id || t.id) && <Check size={14} className="ml-auto" />}
                   </button>
                 ))}
               </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, QrCode, BarChart3,
   BookOpen, Settings, ScanFace, LogOut,
@@ -15,12 +17,9 @@ const navItems = [
   { id: 'reports'      as ActivePage, label: 'Reports',      icon: <BarChart3       size={18} /> },
 ];
 
-interface SidebarProps {
-  activePage: ActivePage;
-  onNavigate: (page: ActivePage) => void;
-}
+export default function Sidebar() {
+  const pathname = usePathname();
 
-export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
   return (
     <aside className="w-[260px] shrink-0 flex flex-col bg-[#12121e] px-4 py-6 sticky top-0 h-screen overflow-y-auto border-r border-[rgba(182,160,255,0.06)]">
       {/* Logo */}
@@ -37,20 +36,25 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
       <nav className="flex flex-col gap-1 flex-1">
         <span className="text-[10px] font-semibold tracking-widest uppercase text-[#aba9b9] px-3 py-2">Menu</span>
 
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className={`flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium w-full text-left transition-all duration-150 cursor-pointer border-none
-              ${activePage === item.id
-                ? 'bg-gradient-to-r from-[rgba(182,160,255,0.18)] to-[rgba(126,81,255,0.12)] text-[#b6a0ff] shadow-[inset_0_0_0_1px_rgba(182,160,255,0.12)]'
-                : 'text-[#aba9b9] hover:bg-[#181826] hover:text-[#e9e6f7]'
-              }`}
-          >
-            <span className="w-5 h-5 shrink-0">{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          const href = item.id === 'dashboard' ? '/teacher' : `/teacher/${item.id}`;
+          const isActive = item.id === 'dashboard' ? pathname === '/teacher' : pathname.startsWith(href);
+
+          return (
+            <Link
+              key={item.id}
+              href={href}
+              className={`flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium w-full text-left transition-all duration-150 cursor-pointer border-none
+                ${isActive
+                  ? 'bg-gradient-to-r from-[rgba(182,160,255,0.18)] to-[rgba(126,81,255,0.12)] text-[#b6a0ff] shadow-[inset_0_0_0_1px_rgba(182,160,255,0.12)]'
+                  : 'text-[#aba9b9] hover:bg-[#181826] hover:text-[#e9e6f7]'
+                }`}
+            >
+              <span className="w-5 h-5 shrink-0">{item.icon}</span>
+              {item.label}
+            </Link>
+          );
+        })}
 
         <span className="text-[10px] font-semibold tracking-widest uppercase text-[#aba9b9] px-3 pt-6 pb-2">System</span>
         <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#aba9b9] hover:bg-[#181826] hover:text-[#e9e6f7] transition-all w-full text-left">
