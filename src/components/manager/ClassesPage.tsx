@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 // import { STUDENTS } from './mockData'; // Keeping dummy students as there wasn't an API provided for them
-import { useGetClasses, useCreateClass } from '@/features/class/hooks/useClassApi';
+import { useGetClasses, useCreateClass, useUpdateClass } from '@/features/class/hooks/useClassApi';
 import { useGetStudents } from '@/features/user/hooks/useUserApi';
+import { useGetCourses } from '@/features/course/hooks/useCourseApi';
 
 /* ─── helpers ──────────────────────────────────────────────────────── */
 const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -302,8 +303,9 @@ function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }
 
 /* ─── main page ────────────────────────────────────────────────────── */
 export default function ClassesPage() {
-  const { data: CourseData, isPending } = useGetClasses(); 
+  const { data: classesData, isPending } = useGetClasses(); 
   const { data: studentsData, isPending: isStudentsPending } = useGetStudents();
+  const { data: coursesData, isPending: isCoursesPending } = useGetCourses();
 
   // Parse students from the API hook
   const students = useMemo(() => {
@@ -324,8 +326,8 @@ export default function ClassesPage() {
 
   // Map API data to component state
   useEffect(() => {
-    if (CourseData && Array.isArray(CourseData)) {
-      const formattedClasses: ClassItem[] = CourseData.map((apiClass: any) => ({
+    if (classesData && Array.isArray(classesData)) {
+      const formattedClasses: ClassItem[] = classesData.map((apiClass: any) => ({
         _id: apiClass._id,
         section: apiClass.section,
         name: apiClass.name, // using name as classroom since it wasn't in API payload
@@ -340,23 +342,25 @@ export default function ClassesPage() {
       console.log("formattedClasses",formattedClasses);
       setClasses(formattedClasses);
     }
-  }, [CourseData]);
+  }, [classesData]);
 
-  // Dynamically extract all unique courses from the fetched class payload
   const courses = useMemo(() => {
-    if (!CourseData || !Array.isArray(CourseData)) return [];
+    if (!coursesData) return [];
+    let rawCourses = [];
+    if (Array.isArray(coursesData)) rawCourses = coursesData;
+    else if (coursesData.courses && Array.isArray(coursesData.courses)) rawCourses = coursesData.courses;
+    else if (coursesData.data && Array.isArray(coursesData.data)) rawCourses = coursesData.data;
     
-    const allCourses = CourseData.flatMap((c: any) => c.courses || []);
+    if (!Array.isArray(rawCourses)) return [];
     
-    // Deduplicate by course ID using Map
-    const uniqueCourses = Array.from(new Map(allCourses.map((c: any) => [c._id, c])).values());
-    
-    return uniqueCourses.map((c: Course) => ({
+    return rawCourses.map((c: any) => ({
       _id: c._id,
       code: c.code,
-      name: c.name
-    }));
-  }, [CourseData]);
+      name: c.name,
+      teacher: c.teacher,
+      class: c.class
+    })) as Course[];
+  }, [coursesData]);
 
 
 
@@ -376,6 +380,7 @@ export default function ClassesPage() {
   
 
   const createClassMutation = useCreateClass();
+  const updateClassMutation = useUpdateClass();
 
   const handleSave = (data: Omit<ClassItem, 'id'>) => {
     if (modal?.mode === 'add') {
@@ -389,8 +394,16 @@ export default function ClassesPage() {
         }
       });
     } else if (modal?.mode === 'edit' && modal.cls) {
-      setClasses(prev => prev.map(c => c._id === modal.cls!._id ? { ...c, ...data } : c));
-      setModal(null)}
+      const { _id, ...updateData } = data;
+      updateClassMutation.mutate({ id: modal.cls._id, data: updateData }, {
+        onSuccess: () => {
+          setModal(null);
+        },
+        onError: (error) => {
+          console.error("Failed to update class:", error);
+        }
+      });
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -399,7 +412,7 @@ export default function ClassesPage() {
     setDeleteId(null);
   };
 
-  if (isPending || isStudentsPending) {
+  if (isPending || isStudentsPending || isCoursesPending) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgba(182,160,255,1)]"></div>
@@ -565,7 +578,7 @@ m
           cls={modal.cls}
           courses={courses}
           students={students}
-          isPending={createClassMutation.isPending}
+          isPending={createClassMutation.isPending || updateClassMutation.isPending}
           onClose={() => setModal(null)}
           onSave={handleSave}
         />

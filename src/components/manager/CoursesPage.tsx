@@ -4,9 +4,9 @@ import React, { useState, useMemo } from 'react';
 import { Search, Plus, Pencil, Trash2, UserCheck, X, Check } from 'lucide-react';
 import type { Course } from './types';
 import { useQueryClient } from '@tanstack/react-query';
-import {useGetClasses } from '@/features/manager/hooks/useManagerApi';
 import { useGetTeachers } from '@/features/user/hooks/useUserApi';
 import { useGetCourses, useCreateCourse } from '@/features/course/hooks/useCourseApi';
+import { useGetClasses } from '@/features/class/hooks/useClassApi';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 const Avatar = ({ initials, color = 'from-[#7e51ff] to-[#56ebcf]' }: { initials: string; color?: string }) => (
