@@ -23,7 +23,7 @@ export const useCreateCourse = () => {
 export const useUpdateCourse = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, body }: { id: string; body: FormData }) => api.updateCourse(id, body),
+        mutationFn: ({ id, body }: { id: string; body: any }) => api.updateCourse(id, body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["allCourses"] });
         }

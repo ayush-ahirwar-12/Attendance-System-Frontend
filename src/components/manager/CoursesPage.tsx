@@ -5,7 +5,7 @@ import { Search, Plus, Pencil, Trash2, UserCheck, X, Check } from 'lucide-react'
 import type { Course } from './types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGetTeachers } from '@/features/user/hooks/useUserApi';
-import { useGetCourses, useCreateCourse } from '@/features/course/hooks/useCourseApi';
+import { useGetCourses, useCreateCourse, useUpdateCourse, useDeleteCourse } from '@/features/course/hooks/useCourseApi';
 import { useGetClasses } from '@/features/class/hooks/useClassApi';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -164,7 +164,9 @@ export default function CoursesPage() {
 
   const queryClient = useQueryClient();
   const { data: fetchedCourses, isPending } = useGetCourses();  
-  const { mutate: createCourseMutate } = useCreateCourse();
+  const { mutate: createCourseMutate, isPending: isCreating } = useCreateCourse();
+  const { mutate: updateCourseMutate, isPending: isUpdating } = useUpdateCourse();
+  const { mutate: deleteCourseMutate, isPending: isDeleting } = useDeleteCourse();
   const { data: fetchedClassesData } = useGetClasses();
   const { data: fetchedTeachersData } = useGetTeachers();
 
@@ -215,19 +217,28 @@ export default function CoursesPage() {
         }
       });
     } else if (modal?.mode === 'edit' && modal.course) {
-      updateCache(prev => prev.map(c => c._id === modal.course!._id ? { ...c, ...data } : c));
-      setModal(null);
+      updateCourseMutate({ id: modal.course._id, body: data }, {
+        onSuccess: () => {
+          setModal(null);
+        }
+      });
     }
   };
 
   const handleAssign = (courseId: string, teacherId: string | null) => {
-    updateCache(prev => prev.map(c => c._id === courseId ? { ...c, teacher: teacherId } : c));
-    setModal(null);
+    updateCourseMutate({ id: courseId, body: { teacher: teacherId } }, {
+      onSuccess: () => {
+        setModal(null);
+      }
+    });
   };
 
   const handleDelete = (id: string) => {
-    updateCache(prev => prev.filter(c => c._id !== id));
-    setDeleteId(null);
+    deleteCourseMutate(id, {
+      onSuccess: () => {
+        setDeleteId(null);
+      }
+    });
   };
 
   if (isPending) {
