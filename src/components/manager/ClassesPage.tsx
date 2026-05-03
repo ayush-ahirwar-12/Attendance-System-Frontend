@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import type { ClassItem, Course, Student } from './types';
 // import { STUDENTS } from './mockData'; // Keeping dummy students as there wasn't an API provided for them
-import { useGetClasses, useCreateClass, useUpdateClass } from '@/features/class/hooks/useClassApi';
+import { useGetClasses, useCreateClass, useUpdateClass, useDeleteClass } from '@/features/class/hooks/useClassApi';
 import { useGetStudents } from '@/features/user/hooks/useUserApi';
 import { useGetCourses } from '@/features/course/hooks/useCourseApi';
 
@@ -61,19 +61,6 @@ function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }
   const [studentSearch, setStudentSearch] = useState('');
 
   const readOnly = mode === 'view';
-
-  // const toggleDay = (day: string) => {
-  //   if (readOnly) return;
-  //   setForm(f => ({
-  //     ...f,
-  //     schedule: {
-  //       ...f.schedule,
-  //       days: f.schedule.days.includes(day)
-  //         ? f.schedule.days.filter(d => d !== day)
-  //         : [...f.schedule.days, day],
-  //     },
-  //   }));
-  // };
 
   const toggleStudent = (id: string) => {
     if (readOnly) return;
@@ -150,38 +137,6 @@ function ClassModal({ mode, cls, courses, students, isPending, onClose, onSave }
                 </select>
               )}
             </div>
-
-            {/* Schedule : days */}
-            {/* <div className="col-span-2">
-              <label className={labelCls}>Schedule Days</label>
-              <div className="flex gap-2 flex-wrap">
-                {ALL_DAYS.map(day => (
-                  <button
-                    key={day}
-                    onClick={() => toggleDay(day)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                      form.schedule.days.includes(day)
-                        ? 'bg-[rgba(182,160,255,0.18)] text-[#b6a0ff] border-[rgba(182,160,255,0.3)]'
-                        : 'bg-[#12121e] text-[#aba9b9] border-[rgba(71,71,84,0.3)] hover:text-[#e9e6f7]'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </div> */}
-
-            {/* Time */}
-            {/* <div>
-              <label className={labelCls}>Start Time</label>
-              <input type="time" className={inputCls} value={form.schedule.from}
-                onChange={e => !readOnly && setForm(f => ({ ...f, schedule: { ...f.schedule, from: e.target.value } }))} readOnly={readOnly} />
-            </div>
-            <div>
-              <label className={labelCls}>End Time</label>
-              <input type="time" className={inputCls} value={form.schedule.to}
-                onChange={e => !readOnly && setForm(f => ({ ...f, schedule: { ...f.schedule, to: e.target.value } }))} readOnly={readOnly} />
-            </div> */}
 
             {/* Classroom */}
             <div className="col-span-2">
@@ -381,6 +336,7 @@ export default function ClassesPage() {
 
   const createClassMutation = useCreateClass();
   const updateClassMutation = useUpdateClass();
+  const deleteClassMutation = useDeleteClass();
 
   const handleSave = (data: Omit<ClassItem, 'id'>) => {
     if (modal?.mode === 'add') {
@@ -407,9 +363,15 @@ export default function ClassesPage() {
   };
 
   const handleDelete = (id: string) => {
-    // Note: Here you would integrate your DELETE API request
-    setClasses(prev => prev.filter(c => c._id !== id));
-    setDeleteId(null);
+    deleteClassMutation.mutate(id, {
+      onSuccess: () => {
+        setDeleteId(null);
+      },
+      onError: (error) => {
+        console.error("Failed to delete class:", error);
+        setDeleteId(null);
+      }
+    });
   };
 
   if (isPending || isStudentsPending || isCoursesPending) {
