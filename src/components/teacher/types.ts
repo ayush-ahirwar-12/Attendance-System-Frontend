@@ -1,1 +1,1 @@
-export type ActivePage = 'dashboard' | 'students' | 'qr-generator' | 'reports' | 'classes';
+export type ActivePage = 'dashboard' | 'courses' | 'students' | 'qr-generator' | 'reports' | 'classes';

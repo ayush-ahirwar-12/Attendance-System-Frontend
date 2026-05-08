@@ -17,7 +17,7 @@ const Avatar = ({ initials, color = 'from-[#7e51ff] to-[#56ebcf]' }: { initials:
 
 /* ─── empty course form ────────────────────────────────────────────── */
 const emptyForm = (): Omit<Course, '_id' | 'createdAt' | 'updatedAt'> => ({
-  code: '', name: '', class: '', teacher: null,
+  code: '', name: '', class: '', type: 'compulsory', teacher: null,
 });
 
 /* ─── modal ────────────────────────────────────────────────────────── */
@@ -45,10 +45,13 @@ function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, o
     return found ? (found._id || found.id) : val;
   };
 
-  const [form, setForm] = useState<Omit<Course, '_id' | 'createdAt' | 'updatedAt'>>(
-    course ? { code: course.code, name: course.name, class: getClassId(course.class), teacher: getTeacherId(course.teacher) }
-           : emptyForm()
+  const [form, setForm] = useState<Omit<Course, '_id' | 'createdAt' | 'updatedAt' | 'type'>>(
+    course
+      ? { code: course.code, name: course.name, class: getClassId(course.class), teacher: getTeacherId(course.teacher) }
+      : { code: '', name: '', class: '', teacher: null }
   );
+  // Separate state for type to avoid any closure / shadowing issues
+  const [courseType, setCourseType] = useState<'compulsory' | 'elective'>(course?.type ?? 'compulsory');
   const [assignTeacher, setAssignTeacher] = useState<string | null>(getTeacherId(course?.teacher) ?? null);
 
   const inputCls = 'w-full bg-[#12121e] border border-[rgba(71,71,84,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#e9e6f7] placeholder:text-[#aba9b9] focus:outline-none focus:border-[rgba(182,160,255,0.4)] focus:bg-[#0d0d18] transition-all';
@@ -99,13 +102,35 @@ function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, o
                 <label className={labelCls}>Course Name</label>
                 <input className={inputCls} placeholder="e.g. Algorithm Design" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
+              {/* Course type toggle */}
+              <div>
+                <label className={labelCls}>Course Type</label>
+                <div className="flex gap-2">
+                  {(['compulsory', 'elective'] as const).map(typeOption => (
+                    <button
+                      key={typeOption}
+                      type="button"
+                      onClick={() => setCourseType(typeOption)}
+                      className="flex-1 py-2 rounded-full text-xs font-semibold border transition-all"
+                      style={{
+                        color: courseType === typeOption ? (typeOption === 'compulsory' ? '#68fadd' : '#ffd966') : '#aba9b9',
+                        background: courseType === typeOption ? (typeOption === 'compulsory' ? 'rgba(104,250,221,0.15)' : 'rgba(255,217,102,0.15)') : 'rgba(71,71,84,0.1)',
+                        borderColor: courseType === typeOption ? (typeOption === 'compulsory' ? '#68fadd' : '#ffd966') : 'rgba(71,71,84,0.3)',
+                        boxShadow: courseType === typeOption ? `0 0 12px ${typeOption === 'compulsory' ? '#68fadd' : '#ffd966'}30` : 'none',
+                      }}
+                    >
+                      {typeOption.charAt(0).toUpperCase() + typeOption.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className={labelCls}>Assign Teacher</label>
                 <select className={inputCls} value={form.teacher ?? ''} onChange={e => setForm(f => ({ ...f, teacher: e.target.value || null }))}>
                   <option value="">— Unassigned —</option>
-                  {backendTeachers.map(t => (
-                    <option key={t._id || t.id} value={t._id}>
-                      {t.name}
+                  {backendTeachers.map(teacher => (
+                    <option key={teacher._id || teacher.id} value={teacher._id}>
+                      {teacher.name}
                     </option>
                   ))}
                 </select>
@@ -157,7 +182,7 @@ function CourseModal({ mode, course, backendClasses, backendTeachers, onClose, o
               if (mode === 'assign' && course) {
                 onAssign(course._id, assignTeacher);
               } else {
-                onSave(form);
+                onSave({ ...form, type: courseType });
               }
             }}
             disabled={mode !== 'assign' && (!form.code.trim() || !form.name.trim() || !form.class)}
@@ -261,7 +286,7 @@ export default function CoursesPage() {
         <span className="ml-3 text-[#aba9b9] text-sm font-medium tracking-wide">Loading courses data...</span>
       </div>
     );
-  }
+  }  
 
   return (
     <div>
@@ -305,7 +330,7 @@ export default function CoursesPage() {
         <table className="w-full border-separate border-spacing-y-1">
           <thead>
             <tr>
-              {['Code', 'Course Name', 'Class', 'Assigned Teacher', 'Actions'].map(h => (
+              {['Code', 'Course Name', 'Type', 'Class', 'Assigned Teacher', 'Actions'].map(h => (
                 <th key={h} className="text-left text-[11px] font-semibold tracking-[0.06em] uppercase text-[#aba9b9] px-3 py-2.5">{h}</th>
               ))}
             </tr>
@@ -318,6 +343,13 @@ export default function CoursesPage() {
                     <span className="font-semibold text-[#b6a0ff] text-sm font-mono">{course.code}</span>
                   </td>
                   <td className="px-3 py-3 text-[13px] font-medium text-[#e9e6f7]">{course.name}</td>
+                  <td className="px-3 py-3">
+                    {course.type === 'elective' ? (
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[rgba(255,217,102,0.12)] text-[#68fadd] border border-[rgba(255,217,102,0.25)] uppercase tracking-wider">Elective</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[rgba(104,250,221,0.1)] text-[#68fadd] border border-[rgba(104,250,221,0.2)] uppercase tracking-wider">Compulsory</span>
+                    )}
+                  </td>
                   <td className="px-3 py-3">
                     {course.class ? (
                       <span className="text-xs font-medium px-2 py-1 rounded bg-[#242434] text-[#aba9b9]">
@@ -367,7 +399,7 @@ export default function CoursesPage() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-[#aba9b9] text-sm">
+                <td colSpan={6} className="text-center py-12 text-[#aba9b9] text-sm">
                   No courses match your search.
                 </td>
               </tr>

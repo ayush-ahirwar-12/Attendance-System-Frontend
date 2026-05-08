@@ -2,10 +2,14 @@
 
 import React, { useMemo, useState } from 'react';
 import { Search, Users } from 'lucide-react';
-import { useGetAllUsers, useUpdateRole} from '@/features/user/hooks/useUserApi';
+import { useGetAllUsers, useUpdateRole } from '@/features/user/hooks/useUserApi';
+import { useGetClasses } from '@/features/class/hooks/useClassApi';
+import { useGetCourses } from '@/features/course/hooks/useCourseApi';
+import { useEnrollStudent } from '@/features/enrollment/hooks/useEnrollmentApi';
 import type { User } from './users/types';
 import UsersTable from './users/UsersTable';
 import AssignRoleModal from './users/AssignRoleModal';
+import EnrollStudentModal from './users/EnrollStudentModal';
 import Pagination from './users/Pagination';
 
 /* ─── static fallback roles (populated from API if available) ──────── */
@@ -26,6 +30,9 @@ export default function UsersPage() {
     /* ── API ──────────────────────────────────────────────────────────── */
     const { data, isPending, isError } = useGetAllUsers({ page, limit: LIMIT, search });
     const { mutate: assignRoleMutate, isPending: isAssigning } = useUpdateRole();
+    const { data: fetchedClassesData } = useGetClasses();
+    const { data: fetchedCoursesData } = useGetCourses();
+    const { mutate: enrollStudentMutate, isPending: isEnrolling } = useEnrollStudent();
     console.log(data);
     
 
@@ -41,6 +48,18 @@ export default function UsersPage() {
     const totalPages: number = data?.totalPages ?? Math.ceil(total / LIMIT);
 
     const verifiedCount = users.filter((u) => u.isVerified).length;
+
+    const backendClasses = useMemo(() => {
+        if (!fetchedClassesData) return [];
+        return Array.isArray(fetchedClassesData) ? fetchedClassesData : (fetchedClassesData.data || []);
+    }, [fetchedClassesData]);
+
+    const backendCourses = useMemo(() => {
+        if (!fetchedCoursesData) return [];
+        if (Array.isArray(fetchedCoursesData)) return fetchedCoursesData;
+        if (fetchedCoursesData.courses) return fetchedCoursesData.courses;
+        return fetchedCoursesData.data || [];
+    }, [fetchedCoursesData]);
 
     const availableRoles = useMemo(() => {
         const roleMap: Record<string, { _id: string; name: string; description: string }> = {};
@@ -58,6 +77,7 @@ export default function UsersPage() {
 
     /* ── Modal state ──────────────────────────────────────────────────── */
     const [assignTarget, setAssignTarget] = useState<User | null>(null);
+    const [enrollTarget, setEnrollTarget] = useState<User | null>(null);
 
     /* ── Handlers ─────────────────────────────────────────────────────── */
     const handleSearch = (e: React.FormEvent) => {
@@ -73,6 +93,17 @@ export default function UsersPage() {
                 onSuccess: () => setAssignTarget(null),
             }
         );
+    };
+
+    const handleEnroll = (payload: {
+        student: string;
+        classId: string;
+        courseId?: string | null;
+        status: 'active' | 'dropped' | 'completed';
+    }) => {
+        enrollStudentMutate(payload, {
+            onSuccess: () => setEnrollTarget(null),
+        });
     };
 
     /* ── Loading ──────────────────────────────────────────────────────── */
@@ -158,7 +189,7 @@ export default function UsersPage() {
             </form>
 
             {/* Table */}
-            <UsersTable users={users} onAssignRole={setAssignTarget} />
+            <UsersTable users={users} onAssignRole={setAssignTarget} onEnroll={setEnrollTarget} />
 
             {/* Pagination */}
             {total > 0 && (
@@ -181,6 +212,18 @@ export default function UsersPage() {
                     isLoading={isAssigning}
                     onClose={() => setAssignTarget(null)}
                     onSave={handleAssignSave}
+                />
+            )}
+
+            {/* Enroll Student Modal */}
+            {enrollTarget && (
+                <EnrollStudentModal
+                    student={enrollTarget}
+                    classes={backendClasses}
+                    courses={backendCourses}
+                    isLoading={isEnrolling}
+                    onClose={() => setEnrollTarget(null)}
+                    onEnroll={handleEnroll}
                 />
             )}
         </div>

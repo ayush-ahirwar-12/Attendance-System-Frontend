@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, XCircle, GraduationCap } from 'lucide-react';
 import type { User } from './types';
 
 /* ── Role badge colors ────────────────────────────────────────────── */
@@ -29,9 +29,10 @@ function Avatar({ firstName, lastName }: { firstName: string; lastName: string }
 interface UsersTableProps {
     users: User[];
     onAssignRole: (user: User) => void;
+    onEnroll: (user: User) => void;
 }
 
-export default function UsersTable({ users, onAssignRole }: UsersTableProps) {
+export default function UsersTable({ users, onAssignRole, onEnroll }: UsersTableProps) {
     if (users.length === 0) {
         return (
             <div className="bg-[#181826] rounded-xl p-12 text-center">
@@ -114,14 +115,26 @@ export default function UsersTable({ users, onAssignRole }: UsersTableProps) {
 
                                 {/* Actions */}
                                 <td className="px-3 py-3 rounded-r-lg">
-                                    <button
-                                        onClick={() => onAssignRole(user)}
-                                        title="Assign Role"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(104,250,221,0.08)] text-[#68fadd] text-xs font-semibold hover:bg-[rgba(104,250,221,0.15)] hover:scale-105 transition-all"
-                                    >
-                                        <ShieldCheck size={13} />
-                                        Assign Role
-                                    </button>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={() => onAssignRole(user)}
+                                            title="Assign Role"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(104,250,221,0.08)] text-[#68fadd] text-xs font-semibold hover:bg-[rgba(104,250,221,0.15)] hover:scale-105 transition-all"
+                                        >
+                                            <ShieldCheck size={13} />
+                                            Assign Role
+                                        </button>
+                                        {user.role?.name?.toLowerCase() === 'student' && (
+                                            <button
+                                                onClick={() => onEnroll(user)}
+                                                title="Enroll in Class"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(182,160,255,0.08)] text-[#b6a0ff] text-xs font-semibold hover:bg-[rgba(182,160,255,0.15)] hover:scale-105 transition-all"
+                                            >
+                                                <GraduationCap size={13} />
+                                                Enroll
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         );

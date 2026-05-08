@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/api";
 import { Course } from "@/components/manager/types";
 
+
 export const useGetCourses = () => {
     return useQuery({
         queryKey: ["allCourses"],
@@ -35,7 +36,7 @@ export const useDeleteCourse = () => {
     return useMutation({
         mutationFn: (id: string) => api.deleteCourse(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["allCourses"] });    
+            queryClient.invalidateQueries({ queryKey: ["allCourses"] });
         }
     });
 };

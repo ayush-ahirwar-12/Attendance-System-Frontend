@@ -4,7 +4,7 @@ import React from 'react';
 import {
   LayoutDashboard, BookOpen, CalendarDays,
   BarChart3, Settings, ScanFace,
-  Users
+  Users, GraduationCap
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -19,11 +19,12 @@ type User={
 }
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard',  icon: <LayoutDashboard size={18} />, href: '/manager' },
-  { id: 'courses',   label: 'Courses',    icon: <BookOpen        size={18} />, href: '/manager/courses' },
-  { id: 'classes',   label: 'Classes',    icon: <CalendarDays    size={18} />, href: '/manager/classes' },
-  { id: 'reports',   label: 'Reports',    icon: <BarChart3       size={18} />, href: '/manager/reports' },
-  { id: 'users',     label: 'Users',      icon: <Users           size={18} />, href: '/manager/user' },
+  { id: 'dashboard',   label: 'Dashboard',   icon: <LayoutDashboard size={18} />, href: '/manager' },
+  { id: 'courses',     label: 'Courses',     icon: <BookOpen        size={18} />, href: '/manager/courses' },
+  { id: 'classes',     label: 'Classes',     icon: <CalendarDays    size={18} />, href: '/manager/classes' },
+  { id: 'enrollments', label: 'Enrollments', icon: <GraduationCap   size={18} />, href: '/manager/enrollments' },
+  { id: 'reports',     label: 'Reports',     icon: <BarChart3       size={18} />, href: '/manager/reports' },
+  { id: 'users',       label: 'Users',       icon: <Users           size={18} />, href: '/manager/user' },
 ];
 
 export default function ManagerSidebar({ user }: { user: User }) {

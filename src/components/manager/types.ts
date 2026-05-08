@@ -1,4 +1,4 @@
-export type ManagerPage = 'dashboard' | 'courses' | 'classes' | 'reports'|'users';
+export type ManagerPage = 'dashboard' | 'courses' | 'classes' | 'reports' | 'users';
 
 export interface Teacher {
   id: string;
@@ -11,7 +11,7 @@ export interface Teacher {
 export interface Student {
   _id: string;
   name: string;
-  email:string
+  email: string
 
 }
 
@@ -20,16 +20,17 @@ export interface Course {
   code: string;
   name: string;
   class: string;
+  type: 'compulsory' | 'elective';
   teacher?: string | null;
 }
 
 export interface ClassItem {
-  _id:string,
-  section:string,
-  name:string,
-  students:string[],
-  latitude:number,
-  longitude:number,
-  radius:number,
-  courses:any[]
+  _id: string,
+  section: string,
+  name: string,
+  students: string[],
+  latitude: number,
+  longitude: number,
+  radius: number,
+  courses: any[]
 }

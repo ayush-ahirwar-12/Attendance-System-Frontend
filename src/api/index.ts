@@ -18,3 +18,9 @@ export * from "./user/getTeachers";
 export * from "./user/getAllUsers";
 export * from "./user/updateRole";
 export * from "./user/getStudents";
+
+
+export * from "./enrollment/enrollStudent";
+export * from "./enrollment/getEnrollments";   // exports getEnrollmentsByClass
+export * from "./enrollment/updateEnrollment";
+export * from "./enrollment/deleteEnrollment";

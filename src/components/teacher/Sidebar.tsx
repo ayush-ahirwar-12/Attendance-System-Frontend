@@ -10,11 +10,11 @@ import {
 import type { ActivePage } from '@/components/teacher/types';
 
 const navItems = [
-  { id: 'dashboard'    as ActivePage, label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
-  { id: 'classes'      as ActivePage, label: 'My Classes',   icon: <BookOpen        size={18} /> },
-  { id: 'students'     as ActivePage, label: 'Students',     icon: <Users           size={18} /> },
-  { id: 'qr-generator' as ActivePage, label: 'QR Generator', icon: <QrCode          size={18} /> },
-  { id: 'reports'      as ActivePage, label: 'Reports',      icon: <BarChart3       size={18} /> },
+  { id: 'dashboard' as ActivePage, label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+  { id: 'courses'   as ActivePage, label: 'My Courses', icon: <BookOpen size={18} /> },
+  { id: 'students'  as ActivePage, label: 'Students', icon: <Users size={18} /> },
+  { id: 'qr-generator' as ActivePage, label: 'QR Generator', icon: <QrCode size={18} /> },
+  { id: 'reports' as ActivePage, label: 'Reports', icon: <BarChart3 size={18} /> },
 ];
 
 export default function Sidebar() {
@@ -60,6 +60,7 @@ export default function Sidebar() {
         <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#aba9b9] hover:bg-[#181826] hover:text-[#e9e6f7] transition-all w-full text-left">
           <Settings size={18} /> Settings
         </button>
+        
         <button className="flex items-center gap-3 px-[14px] py-[11px] rounded-[10px] text-sm font-medium text-[#ff716c] hover:bg-[rgba(255,113,108,0.08)] transition-all w-full text-left">
           <LogOut size={18} /> Logout
         </button>
