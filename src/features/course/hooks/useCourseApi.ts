@@ -40,3 +40,18 @@ export const useDeleteCourse = () => {
         }
     });
 };
+
+export const useGetTeacherCourses = () => {
+    return useQuery({
+        queryKey: ["teacherCourses"],
+        queryFn: api.getCourses,
+    });
+};
+
+export const useGetCourseStudents = (courseId: string) => {
+    return useQuery({
+        queryKey: ["courseStudents", courseId],
+        queryFn: () => api.getCourseStudents(courseId),
+        enabled: !!courseId,
+    });
+};

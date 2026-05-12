@@ -24,3 +24,24 @@ export * from "./enrollment/enrollStudent";
 export * from "./enrollment/getEnrollments";   // exports getEnrollmentsByClass
 export * from "./enrollment/updateEnrollment";
 export * from "./enrollment/deleteEnrollment";
+
+export * from "./lecture/createRequest";
+export * from "./lecture/generateLectures";
+export * from "./lecture/getMyRequests";
+export * from "./lecture/getPendingRequests";
+export * from "./lecture/getTodaySchedule";
+export * from "./lecture/getWeekSchedule";
+export * from "./lecture/reviewRequest";
+export * from "./lecture/updateTopic";
+
+export * from "./attendance/getMyAttendance";
+export * from "./attendance/manualMark";
+export * from "./attendance/markAttendance";
+export * from "./attendance/overrideRecord";
+
+export * from "./session/closeSession";
+export * from "./session/getLiveSession";
+export * from "./session/startSession";
+
+export * from "./course/getTeacherCourses";
+export * from "./course/getCourseStudents";
