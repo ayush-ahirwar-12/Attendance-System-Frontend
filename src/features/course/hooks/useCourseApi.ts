@@ -54,4 +54,12 @@ export const useGetCourseStudents = (courseId: string) => {
         queryFn: () => api.getCourseStudents(courseId),
         enabled: !!courseId,
     });
-};
+};
+
+
+export const useGetMyCourses = () => {
+    return useQuery({
+        queryKey: ["myCourses"],
+        queryFn: api.getMyCourse,
+    });
+};

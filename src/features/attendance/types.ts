@@ -1,6 +1,6 @@
 export interface ManualMarkPayload {
     studentId: string;
-    status: 'PRESENT' | 'ABSENT' | 'LATE';
+    status: string
     remarks?: string;
     [key: string]: unknown;
 }

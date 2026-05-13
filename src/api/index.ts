@@ -45,3 +45,9 @@ export * from "./session/startSession";
 
 export * from "./course/getTeacherCourses";
 export * from "./course/getCourseStudents";
+export * from "./course/getMyCourse";
+
+export * from "./semester/create";
+export * from "./semester/getSemester";
+export * from "./semester/updateSemesterStatus";
+
