@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+
 import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, X, CalendarDays, CheckCircle2, PlayCircle } from "lucide-react";

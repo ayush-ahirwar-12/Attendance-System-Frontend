@@ -11,7 +11,10 @@ export interface Teacher {
 export interface Student {
   _id: string;
   name: string;
-  email: string
+  email: string;
+  initials:string,
+  rollNo:string,
+  department:string
 
 }
 
