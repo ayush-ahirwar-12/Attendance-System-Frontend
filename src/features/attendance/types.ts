@@ -12,7 +12,11 @@ export interface OverrideRecordPayload {
 }
 
 export interface MarkAttendancePayload {
+    qrToken?: string;
     sessionId?: string;
     studentId?: string;
+    latitude?: number;
+    longitude?: number;
+    faceImage?: string;
     [key: string]: unknown;
 }
